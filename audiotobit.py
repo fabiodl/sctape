@@ -209,7 +209,7 @@ def encodeByte(b):
 
 
 
-def encodeSections(sections,fastStart=False):
+def encodeSections(sections,fastStart=True):
     data=""
     for keyCode,chunk,_ in sections:
         if fastStart:
@@ -272,7 +272,26 @@ def audioToRemasteredBitAuto(filename):
         except:
             print(f"Level at {rho:0.2f} failed",end="\r")
     print("")
-        
+
+
+
+def audioToRawBit(filename,levell,levelh,lperiod): #levels are referred to max value, lperiod in seconds
+    bitrate,data=readAudio(filename)    
+    print("levels ",min(data),max(data))
+    bits=decodeBits(data,min(data)*levell,max(data)*levelh,lperiod,bitrate)
+    
+    outfile=".".join(filename.split(".")[:-1])+".bit"
+    with open(outfile,"w") as f:
+        for b in bits:
+            if b in BitString:                
+                f.write(BitString[b])
+            else:
+                for i in range(int(np.round(b[1]/bitrate*1200))):
+                    f.write(" ")
+
+
+
+    
 def getParam(index,default):
     if len(sys.argv)>index:
         return sys.argv[index]
@@ -281,15 +300,20 @@ def getParam(index,default):
     
 if __name__=="__main__":
     if len(sys.argv)<2:
-        print("Usage ",sys.argv[0]," filename [threshold] [pitch]")
+        print("Usage ",sys.argv[0]," filename [threshold] [remaster/raw] [pitch]")
     else:
         filename=sys.argv[1]        
         rho=getParam(2,0.25)
-        if rho=="auto":
-            audioToRemasteredBitAuto(filename)
-        else:
+        if rho!="auto":
             rho=float(rho)
-            pitch=float(getParam(3,1))            
-            lperiod=pitch/1200
-            audioToRemasteredBit(filename,rho,rho,lperiod)
-
+        mode=getParam(3,"remaster")
+        pitch=float(getParam(4,1))            
+        lperiod=pitch/1200
+        if mode=="remaster":
+            if rho=="auto":
+                audioToRemasteredBitAuto(filename)                            
+            else:
+                audioToRemasteredBit(filename,rho,rho,lperiod)
+        else:            
+            audioToRawBit(filename,rho,rho,lperiod)
+            
