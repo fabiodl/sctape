@@ -1,16 +1,16 @@
-==mp3tobit.py==
+==audiotobit.py==
 
-Converts .mp3 files to .bit files
+Converts audio files to .bit files
 
 Usage
 
-python3 mp3tobit.py filename.mp3 [threshold] 
+python3 audiotobit.py filename.mp3/wav [threshold] 
 
 where threshold is in the range 0 to 1. 
 
 or
 
-python3 mp3tobit.py filename.mp3 auto
+python3 audiotobit.py filename.mp3/wav auto
 
 searches for a suitable threshold automatically
 

@@ -22,8 +22,12 @@ class KeyCode:
 
 
 #https://stackoverflow.com/questions/53633177/how-to-read-a-mp3-audio-file-into-a-numpy-array-save-a-numpy-array-to-mp3
-def readMp3(f, normalized=False):  
-    a = pydub.AudioSegment.from_mp3(f)
+
+def readAudio(f):  
+    ext=f.split(".")[-1]
+    loader={"mp3":pydub.AudioSegment.from_mp3,
+          "wav":pydub.AudioSegment.from_wav}    
+    a = loader[ext](f)
     y = np.array(a.get_array_of_samples())
     if a.channels == 2:
         y = np.mean(y.reshape((-1, 2)),axis=1)
@@ -33,8 +37,8 @@ def readMp3(f, normalized=False):
 
 
 def getHisteresis(data,levell,levelh):
-    return np.where(data>levelh,1,np.where(data<levell,-1,0))    
-     
+    return np.where(data>levelh,1,np.where(data<levell,-1,0))   
+
 
 #https://stackoverflow.com/questions/1066758/find-length-of-sequences-of-identical-values-in-a-numpy-array-run-length-encodi/32681075
 def lre(bits):
@@ -45,7 +49,14 @@ def lre(bits):
 def isZero(lop,lperiod):
     if len(lop)<2:
         return False
-    return lop[0][0]*lop[1][0]==-1 and lperiod*3/4<lop[0][1]+lop[1][1]<lperiod*3/2
+
+    ok=True
+    for i in range(2):
+        if not (lperiod*3/8<lop[i][1]<lperiod*3/2 ):
+            ok=False        
+   
+
+    return lop[0][0]*lop[1][0]==-1 and ok
 
 def isOne(lop,lperiod):
     if len(lop)<4:
@@ -59,19 +70,33 @@ def isOne(lop,lperiod):
             ok=False
     return ok
       
-def decodeBits(data,levell,levelh,lperiod):
+def decodeBits(data,levell,levelh,lperiodAbs,bitrate):
+    lperiod=lperiodAbs*bitrate
     pairs=list(lre(getHisteresis(data,levell,levelh)))
-    lop=[(v,l) for (v,l) in pairs if l>lperiod/8]
+    lop=[]
+    starts=[]
+    tl=0
+    for (v,l) in pairs:        
+        if l>lperiod/8:
+            lop.append((v,l))
+            starts.append(tl)
+        tl+=l
+        
     i=0
     bits=[]
     while i<len(lop):
         if isZero(lop[i:i+2],lperiod):
             bits.append(Bit0)
+            #print(f"0[{starts[i]}]",end="")
             i+=2
+
         elif isOne(lop[i:i+4],lperiod):
             bits.append(Bit1)
+            #print("1",end="")
             i+=4
         else:
+            badt=starts[i]/bitrate
+            print("unknown bitstream at idx=",starts[i],"t=",badt,lop[i])
             bits.append(lop[i])
             i+=1
 
@@ -174,8 +199,8 @@ def findSections(bs,verbose=True):
     return sections
 
 
-def decodeSections(data,levell,levelh,lperiod):
-    bs=BitStream(decodeBits(data,levell,levelh,lperiod))
+def decodeSections(data,levell,levelh,lperiod,bitrate):
+    bs=BitStream(decodeBits(data,levell,levelh,lperiod,bitrate))
     return findSections(bs)
 
 
@@ -219,9 +244,10 @@ def checkSections(sections):
 
 
 
-def mp3ToRemasteredBit(filename,levell,levelh,lperiod): #levels are referred to max value, lperiod in seconds
-    bitrate,data=readMp3(filename)    
-    sections=decodeSections(data,np.min(data)*levell,np.max(data)*levelh,lperiod*bitrate)
+def audioToRemasteredBit(filename,levell,levelh,lperiod): #levels are referred to max value, lperiod in seconds
+    bitrate,data=readAudio(filename)    
+    print("levels ",min(data),max(data))
+    sections=decodeSections(data,np.min(data)*levell,np.max(data)*levelh,lperiod,bitrate)
     checkSections(sections)
     encoded=encodeSections(sections)
     outfile=".".join(filename.split(".")[:-1])+".bit"
@@ -230,12 +256,12 @@ def mp3ToRemasteredBit(filename,levell,levelh,lperiod): #levels are referred to 
 
 
 
-def mp3ToRemasteredBitAuto(filename):
-    bitrate,data=readMp3(filename)
+def audioToRemasteredBitAuto(filename):
+    bitrate,data=readAudio(filename)
     lperiod=1.0/1200
     for rho in np.linspace(1,0,100):
         try:
-            sections=decodeSections(data,np.min(data)*rho,np.max(data)*rho,lperiod*bitrate)
+            sections=decodeSections(data,np.min(data)*rho,np.max(data)*rho,lperiod,bitrate)
             checkSections(sections)
             encoded=encodeSections(sections)
             outfile=".".join(filename.split(".")[:-1])+".bit"
@@ -260,10 +286,10 @@ if __name__=="__main__":
         filename=sys.argv[1]        
         rho=getParam(2,0.25)
         if rho=="auto":
-            mp3ToRemasteredBitAuto(filename)
+            audioToRemasteredBitAuto(filename)
         else:
             rho=float(rho)
             pitch=float(getParam(3,1))            
             lperiod=pitch/1200
-            mp3ToRemasteredBit(filename,rho,rho,lperiod)
+            audioToRemasteredBit(filename,rho,rho,lperiod)
 
