@@ -1,4 +1,4 @@
-from mp3tobit import Bit0,Bit1,Space,BitStream,findSections,KeyCode
+from audiotobit import Bit0,Bit1,Space,BitStream,findSections,KeyCode
 import glob, os,sys
 
 conv={"0":Bit0,"1":Bit1," ":Space}
