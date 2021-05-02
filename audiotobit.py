@@ -380,7 +380,7 @@ def getParam(index,default):
     
 if __name__=="__main__":
     if len(sys.argv)<2:
-        print("Usage ",sys.argv[0]," filename [threshold] [remaster/raw/bytes] [pitch]")
+        print("Usage ",sys.argv[0]," filename [threshold] [remaster/raw/json] [pitch]")
     else:
         filename=sys.argv[1]        
         rho=getParam(2,0.25)
