@@ -2,6 +2,7 @@ import pydub
 import numpy as np
 import itertools
 import sys
+import json
 
 Bit0=(0,None)
 Bit1=(1,None)
@@ -56,7 +57,7 @@ def isZero(lop,lperiod):
             ok=False        
    
 
-    return lop[0][0]*lop[1][0]==-1 and ok
+    return ok and lop[0][0]*lop[1][0]==-1
 
 def isOne(lop,lperiod):
     if len(lop)<4:
@@ -291,7 +292,86 @@ def audioToRawBit(filename,levell,levelh,lperiod): #levels are referred to max v
 
 
 
+        
+def getStarts(pairs):
+    starts=[]
+    tl=0
+    for (v,l) in pairs:        
+        starts.append(tl)
+        tl+=l
+    return starts
+
+                    
+def isByte(pairs,period):
+    offset=0
+    n=0
+    if isZero(pairs[offset:offset+2],period):            
+        offset+=2
+    else:
+        return None
+    for i in range(8):
+        if isZero(pairs[offset:offset+2],period):
+            offset+=2
+        elif isOne(pairs[offset:offset+4],period):
+            offset+=4
+            n+=(1<<i)
+        else:
+            return None
+    if isOne(pairs[offset:offset+4],period) and isOne(pairs[offset+4:offset+8],period):
+        offset+=8
+    else:
+        return None
+
+    return offset,n
+                
+
+        
+def audioToJson(filename,levell,levelh,lperiod):
+    bitrate,data=readAudio(filename)
+    period=bitrate*lperiod
+    pairs=list(lre(getHisteresis(data,levell,levelh)))
+    starts=getStarts(pairs)
+    offset=0
+    bits=[]
+    t=0
+    sections=[]
+    currT=None
+    currData=""
     
+    while offset<len(pairs):
+        bi=isByte(pairs[offset:offset+4*11],period)
+        if bi is None:
+            offset+=1
+            if len(currData)>0:
+                  sections.append({"t":currT,"data":currData })
+                  currData=""         
+                  currT=None       
+        else:
+            if currT is None:
+                currT=starts[offset]
+            off,n=bi
+            offset+=off
+            currData+=f"{n:02x}"                  
+    if len(currData)>0:
+        sections.append({"t":currT,"data":currData })
+    outfile=".".join(filename.split(".")[:-1])+".json"
+    with open(outfile,"w") as f:
+        f.write(json.dumps(sections,indent=2))
+
+
+def rhoSweep(func,filename,rho,lperiod):
+    if rho=="auto":
+        for rho in np.linspace(1,0,100):
+            try:
+                func(filename,rho,rho,lperiod)
+                print(f"OK for {rho:0.2f}")
+                return
+            except Exception as e:
+                print(f"Level at {rho:0.2f} failed:"+str(e),end="\r")
+        print("")
+    else:
+        func(filename,rho,rho,lperiod)
+        
 def getParam(index,default):
     if len(sys.argv)>index:
         return sys.argv[index]
@@ -300,7 +380,7 @@ def getParam(index,default):
     
 if __name__=="__main__":
     if len(sys.argv)<2:
-        print("Usage ",sys.argv[0]," filename [threshold] [remaster/raw] [pitch]")
+        print("Usage ",sys.argv[0]," filename [threshold] [remaster/raw/bytes] [pitch]")
     else:
         filename=sys.argv[1]        
         rho=getParam(2,0.25)
@@ -314,6 +394,10 @@ if __name__=="__main__":
                 audioToRemasteredBitAuto(filename)                            
             else:
                 audioToRemasteredBit(filename,rho,rho,lperiod)
-        else:            
-            audioToRawBit(filename,rho,rho,lperiod)
-            
+        elif mode=="raw":            
+            rhoSweep(audioToRawBit,filename,rho,lperiod)
+        elif mode=="json":
+            rhoSweep(audioToJson,filename,rho,lperiod)
+
+        else:
+            raise Exception("Unknown mode",mode)
