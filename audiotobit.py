@@ -325,8 +325,8 @@ def isByte(pairs,period):
     return offset,n
                 
 
-        
-def audioToJson(filename,levell,levelh,lperiod):
+
+def byteSections(filename,levell,levelh,lperiod):
     bitrate,data=readAudio(filename)
     period=bitrate*lperiod
     pairs=list(lre(getHisteresis(data,levell,levelh)))
@@ -336,7 +336,7 @@ def audioToJson(filename,levell,levelh,lperiod):
     t=0
     sections=[]
     currT=None
-    currData=""
+    currData=[]
     
     while offset<len(pairs):
         bi=isByte(pairs[offset:offset+4*11],period)
@@ -344,19 +344,85 @@ def audioToJson(filename,levell,levelh,lperiod):
             offset+=1
             if len(currData)>0:
                   sections.append({"t":currT,"data":currData })
-                  currData=""         
+                  currData=[]    
                   currT=None       
         else:
             if currT is None:
                 currT=starts[offset]
             off,n=bi
             offset+=off
-            currData+=f"{n:02x}"                  
+            currData.append(n)
     if len(currData)>0:
         sections.append({"t":currT,"data":currData })
+    d={"bitrate":bitrate,"sections":sections}
+    return d
+
+
+
+def splitChunks(data,chunkLens):
+    idx=0
+    chunks=[]
+    for l in chunkLens:
+        chunks.append(data[idx:idx+l])
+        idx+=l
+    return chunks
+
+
+def hexString(d):
+    return "".join([f"{v:02x}" for v in d])
+
+def interpretSections(di):
+    do={"bitrate":di["bitrate"]}
+    do["sections"]=[]
+    for idx,s in enumerate(di["sections"]):
+        so={"t":s["t"]}
+        d=s["data"]
+        so["data"]=hexString(d)
+
+        secType=d[0]
+        if secType in KeyCode.name:
+            so["type"]=KeyCode.name[secType]            
+            print("Section",idx,so["type"],"section")
+            d=d[1:]
+            if secType==KeyCode.BasicHeader:
+                filename,programLength,parity,dummyData=splitChunks(d, [16,2,1,2])
+                checkSum=np.sum(filename+programLength+parity)&0xFF
+                if checkSum!=0:
+                    continue
+                so["Filename"]="".join([chr(c) for c in filename])
+                so["ProgramLength"]=int(bigEndian(programLength))
+                so["Parity"]=hexString(parity)
+                so["Dummy"]=hexString(dummyData)
+            if secType==KeyCode.MachineHeader:
+                filename,programLength,startAddr,parity,dummyData=splitChunks(d,[16,2,2,1,2])
+                checkSum=np.sum(filename+programLength+startAddr+parity)&0xFF
+                if checkSum!=0:
+                    continue
+                so["Filename"]="".join([chr(c) for c in filename])
+                so["ProgramLength"]=int(bigEndian(programLength))
+                so["StartAddr"]=f"{bigEndian(startAddr):04x}"
+                so["Parity"]=hexString(parity)
+                so["Dummy"]=hexString(dummyData)
+            elif secType==KeyCode.BasicData or secType==KeyCode.MachineData:
+                program,parity,dummyData=d[:-3],d[-3:-2],d[-2:]
+                checkSum=np.sum(program+parity)&0xFF
+                if checkSum!=0:
+                    continue
+                so["Program"]=hexString(program)
+                so["Dummy"]=hexString(dummyData)
+                so["length"]=len(program)
+        else:
+            print("Unknown section type",secType)
+            continue
+        do["sections"].append(so)
+    return do
+        
+def audioToJson(filename,levell,levelh,lperiod):    
+    d=byteSections(filename,levell,levelh,lperiod)
+    do=interpretSections(d)
     outfile=".".join(filename.split(".")[:-1])+".json"
     with open(outfile,"w") as f:
-        f.write(json.dumps(sections,indent=2))
+            f.write(json.dumps(do,indent=2))
 
 
 def rhoSweep(func,filename,rho,lperiod):
