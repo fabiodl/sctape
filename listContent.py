@@ -1,26 +1,20 @@
-from audiotobit import Bit0,Bit1,Space,BitStream,findSections,KeyCode
+from bitparse import getSections
+from  section import parseBytesSections,KeyCode
+
 import glob, os,sys
-
-conv={"0":Bit0,"1":Bit1," ":Space}
-
-
-def listBitstreamContent(bs):
-    sections=findSections(bs,False)
-    filenames=[]
-    for keyCode,chunk,_ in sections:
-        if keyCode==KeyCode.BasicHeader or keyCode==KeyCode.MachineHeader:
-            filenames.append("".join([chr(c) for c in chunk[0]]))
-    return filenames
 
 
 
 def listBitContent(filename):
-    data=open(filename).read()
-    bs=BitStream([conv[d] for d in data])
-    return listBitstreamContent(bs)
-
-
-
+    d=getSections(filename)
+    parseBytesSections(d["sections"],True)
+    filenames=[]
+    for s in d["sections"]:
+        if s["type"]=="bytes":
+            c=KeyCode.code[s["keycode"]]
+            if c in [KeyCode.BasicHeader,KeyCode.MachineHeader]:                
+                filenames.append(s["Filename"])
+    return filenames
     
 
 if __name__=="__main__":
