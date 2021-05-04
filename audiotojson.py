@@ -1,49 +1,17 @@
 import sys
-import numpy as np
+from jsonparse import jsonSerialize
 from audioparse import getSections
 from section import parseBytesSections,printSummary
-from util import getParam,removeExtesion,rhoSweep
-import json
-
-def hexString(d):
-    return "".join([f"{v:02x}" for v in d])
-
-def elemSerialize(x):
-    t=type(x)
-    #print("type",t)
-    if t in serializers:
-        return serializers[t](x)
-    return x
-
-
-def listSerialize(x):
-    if type(x[0])==np.int64 or type(x[0])==int:
-        return hexString(x)
-    else:
-        return [elemSerialize(e) for e in x]
-    
-
-def dictSerialize(inp):
-    out={}
-    for k,v in inp.items():
-        out[k]=elemSerialize(v)
-    return out
-
-    
-serializers={
-    np.int64:lambda x:int(x),
-    list: listSerialize,
-    dict: dictSerialize
-}
+from util import getParam,removeExtension,rhoSweep
 
 
 def audioToJson(filename,levell,levelh,lperiod,exceptOnError=True):    
     d=getSections(filename,levell,levelh,lperiod)
     parseBytesSections(d["sections"],exceptOnError)
     printSummary(d)
-    outfile=removeExtesion(filename)+".json"
+    outfile=removeExtension(filename)+".json"
     with open(outfile,"w") as f:
-            f.write(json.dumps(dictSerialize(d),indent=2))
+            f.write(jsonSerialize(d))
 
 if __name__=="__main__":
     if len(sys.argv)<2:
@@ -54,5 +22,7 @@ if __name__=="__main__":
         lperiod=1/1200
         rhoSweep(audioToJson,filename,rho,lperiod)
     except:
+        print("===Giving up with decoding===")
+        rho=0.25
         audioToJson(filename,rho,rho,lperiod,False)
         

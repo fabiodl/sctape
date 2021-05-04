@@ -58,9 +58,14 @@ def parseBytes(si,so):
     if secType in KeyCode.name:
         d=d[1:]
         if secType==KeyCode.BasicHeader:
-            filename,programLength,parity,dummyData=splitChunks(d, [16,2,1,2])
+            cl=[16,2,1,2]
+            if (len(d)<np.sum(cl)):
+                so["fail.short"]=np.sum(cl)
+                return False
+            filename,programLength,parity,dummyData=splitChunks(d, cl)
             checkSum=np.sum(filename+programLength+parity)&0xFF
             if checkSum!=0:
+                so["fail.checksum"]=checkSum
                 return False
             so["keycode"]=KeyCode.name[secType]            
             so["Filename"]="".join([chr(c) for c in filename])
@@ -68,9 +73,14 @@ def parseBytes(si,so):
             so["Parity"]=parity
             so["Dummy"]=dummyData
         if secType==KeyCode.MachineHeader:
-            filename,programLength,startAddr,parity,dummyData=splitChunks(d,[16,2,2,1,2])
+            cl=[16,2,2,1,2]
+            if (len(d)<np.sum(cl)):
+                so["fail.short"]=np.sum(cl)
+                return False            
+            filename,programLength,startAddr,parity,dummyData=splitChunks(d,cl)
             checkSum=np.sum(filename+programLength+startAddr+parity)&0xFF
             if checkSum!=0:
+                so["fail.checksum"]=checkSum
                 return False
             so["keycode"]=KeyCode.name[secType]            
             so["Filename"]="".join([chr(c) for c in filename])
@@ -82,17 +92,20 @@ def parseBytes(si,so):
             program,parity,dummyData=d[:-3],d[-3:-2],d[-2:]
             checkSum=np.sum(program+parity)&0xFF
             if checkSum!=0:
+                so["fail.checksum"]=checkSum
+                so["fail.length"]=len(program)
                 return False
             so["keycode"]=KeyCode.name[secType]            
             so["Program"]=program
             so["Dummy"]=dummyData
             so["length"]=len(program)
     else:
+        so["fail.keycode"]=hex(secType)
         print("Unknown Keycode",secType)
         return False
     return True
 
-def parseBytesSections(sl,excepOnError):
+def parseBytesSections(sl,exceptOnError):
   for s in sl:
       if s["type"]=="bytes":
           if not parseBytes(s,s) and exceptOnError:

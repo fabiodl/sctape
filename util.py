@@ -15,12 +15,12 @@ def getParam(index,default):
         return sys.argv[index]
     return default
         
-def removeExtesion(filename):
+def removeExtension(filename):
     return ".".join(filename.split(".")[:-1])
 
 def rhoSweep(func,filename,rho,lperiod):
     if rho=="auto":
-        for rho in np.linspace(1,0,100):
+        for rho in np.linspace(1,0.1,99):
             try:
                 func(filename,rho,rho,lperiod)
                 print(f"OK for {rho:0.2f}")

@@ -2,7 +2,7 @@ import sys
 import numpy as np
 from audioparse import getSections
 from section import parseBytesSections,KeyCode
-from  util import removeExtesion,getParam,rhoSweep
+from  util import removeExtension,getParam,rhoSweep
 
 
 
@@ -48,14 +48,14 @@ def toBitRemaster(d,fastStart=True):
 
 def audioToRawBit(filename,levell,levelh,lperiod):
     d=getSections(filename,levell,levelh,lperiod)
-    outfile=removeExtesion(filename)+".bit"
+    outfile=removeExtension(filename)+".bit"
     with open(outfile,"w") as f:
         f.write(toBitRaw(d))
 
 def audioToRemasteredBit(filename,levell,levelh,lperiod): #levels are referred to max value, lperiod in seconds
     d=getSections(filename,levell,levelh,lperiod)
     parseBytesSections(d["sections"],True)
-    outfile=removeExtesion(filename)+".bit"
+    outfile=removeExtension(filename)+".bit"
     with open(outfile,"w") as f:
         f.write(toBitRemaster(d))
 
