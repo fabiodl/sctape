@@ -1,5 +1,5 @@
-from section import SectionList
-
+from section import SectionList,KeyCode
+from util import removeExtension
 
 def maybeByte(bs):
     if len(bs)<11:
@@ -39,3 +39,52 @@ def getSections(filename):
     sl.finalize()
     d={"bitrate":1200,"sections":sl.sections}
     return d
+
+
+
+
+def encodeByte(b):
+    return "0"+ "".join(["1" if ((b>>i)&0x01)==1 else "0" for i in range(8)])+"11"
+
+def encodeBytes(x):
+    return "".join([encodeByte(b) for b in x])
+
+
+def toBitRaw(d):
+    data=""
+    bitrate=d["bitrate"]
+    for s in d["sections"]:
+        stype=s["type"]
+        if stype=="level":
+            data+=" "*int(np.round(s["length"]/bitrate*1200))
+        elif stype=="header":
+            data+="1"*s["count"]
+        elif stype=="bytes":
+            data+=encodeBytes(s["bytes"])                
+        
+    return data
+
+
+def toBitRemaster(d,fastStart=True):
+    data=""
+    for s in d["sections"]:
+        stype=s["type"]
+        if stype=="bytes":
+            code=KeyCode.code[s["keycode"]]
+            if fastStart:
+                n=0
+            elif code==KeyCode.BasicHeader or code==KeyCode.MachineHeader:
+                n=10*1200
+            elif code==KeyCode.BasicData or code==KeyCode.MachineData:
+                n=1*1200
+            data+=" "*n+"1"*3600+encodeBytes(s["bytes"])
+            fastStart=False
+    return data
+
+def writeBit(filename,d,remaster):
+    outfile=removeExtension(filename)+".bit"
+    with open(outfile,"w") as f:
+        if remaster:
+            f.write(toBitRemaster(d))
+        else:
+            f.write(toBitRaw(d))

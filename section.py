@@ -113,14 +113,14 @@ def parseBytesSections(sl,exceptOnError):
 
 
 
-def printSummary(d):
+def printSummary(d,withSilence=True):
     for s in d["sections"]:
         if s["type"]=="header":
             c=s["count"]
             print(f"Header count={c}")
         elif s["type"]=="level":
             t=s["length"]/d["bitrate"]
-            if t>1.0/1200:
+            if t>1.0/1200 and withSilence:
                 print(f"Silence t={t:0.1f}s")            
         elif "keycode" in s:
             print(s["keycode"],end=" ")
@@ -133,4 +133,11 @@ def printSummary(d):
                 l=s["length"]
                 print(f"length={l}")
 
-
+def listContent(d):
+    filenames=[]
+    for s in d["sections"]:
+        if s["type"]=="bytes":
+            c=KeyCode.code[s["keycode"]]
+            if c in [KeyCode.BasicHeader,KeyCode.MachineHeader]:                
+                filenames.append(s["Filename"])
+    return filenames

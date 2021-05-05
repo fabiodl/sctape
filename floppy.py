@@ -1,6 +1,8 @@
 import sys
 import os
 import pathlib
+import getopt
+from inspect import signature
 
 TRACKS=40
 SECTORSIZE=256
@@ -12,13 +14,31 @@ CLUSTERSPERTRACK=4
 DIRTRACK=20
 DIRSECTOR=0
 DIRENTRYLEN=16
+DIRENTRYNUM=192
 FATTRACK=20
 FATSECTOR=12
+
 class Floppy:
-    def __init__(self, filename):
+
+    def __init_(self):
+        self.format()
+        
+    def open(self, filename):
         self.data=bytearray(open(filename,"rb").read())
         self.listdir()
 
+
+    def format(self):
+        self.data=bytearray([0xFF]*TRACKS*SECTORSPERTRACK*SECTORSIZE)
+        ds=(DIRTRACK*SECTORSPERTRACK+DIRSECTOR)*SECTORSIZE
+        self.data[ds:ds+DIRENTRYNUM*DIRENTRYLEN]=bytes([0x00]*DIRENTRYNUM*DIRENTRYLEN)
+        fs=(FATTRACK*SECTORSPERTRACK+FATSECTOR)*SECTORSIZE
+        CLUSTERSPERTRACK=int(SECTORSPERTRACK/SECTORSPERCLUSTER)        
+        self.data[fs:fs+CLUSTERSPERTRACK]=bytes([0xFE]*CLUSTERSPERTRACK)
+        self.data[fs+20*CLUSTERSPERTRACK:fs+21*CLUSTERSPERTRACK]=bytes([0xFE]*CLUSTERSPERTRACK)
+        self.listdir()
+        
+        
         
     def get(self,track,sector,length=SECTORSIZE):
         start=(track*SECTORSPERTRACK+sector)*SECTORSIZE
@@ -31,8 +51,8 @@ class Floppy:
     
     def listdir(self):
         self.files={}
-        dd=self.get(DIRTRACK,DIRSECTOR,12*SECTORSIZE)
-        for f in range(int(len(dd)/DIRENTRYLEN)):
+        dd=self.get(DIRTRACK,DIRSECTOR,DIRENTRYNUM*DIRENTRYLEN)
+        for f in range(DIRENTRYNUM):
             i=f*16
             fd=dd[i:i+16]
             if fd[0]!=0x00:
@@ -94,11 +114,19 @@ class Floppy:
         print(f"Found {len(reservedChunks)} IPL chunks")
         for chunk in reservedChunks:
             print("Chunk size",(chunk[-1]-chunk[0]+1),"K")
-            data.append(self.getCluster(chunk[0],chunk[-1]-chunk[0]+1))
+            d=self.getCluster(chunk[0],SECTORSPERCLUSTER*(chunk[-1]-chunk[0]+1))
+            data.append((chunk[0],d))
 
         return data
-        
-            
+
+
+    def addSystem(self,cluster,data):
+        start=cluster*SECTORSPERCLUSTER*SECTORSIZE
+        self.data[start:start+len(data)]=data
+        fs=(FATTRACK*SECTORSPERTRACK+FATSECTOR)*SECTORSIZE
+        csize=int(len(data)/ (SECTORSPERCLUSTER*SECTORSIZE) )
+        self.data[fs+cluster:fs+cluster+csize]=bytes([0xFE]*csize)
+        print("System",csize,"sectors")
         
     def getFile(self,name):
         start,_=self.files[name]
@@ -123,8 +151,8 @@ class Floppy:
         chain,lastUsage=self.getChain(start)        
         for c in chain:
             self.delSector(c)
-        dd=self.get(DIRTRACK,DIRSECTOR,12*SECTORSIZE)
-        for f in range(int(len(dd)/DIRENTRYLEN)):
+        dd=self.get(DIRTRACK,DIRSECTOR,DIRENTRYNUM*DIRENTRYLEN)
+        for f in range(DIRENTRYNUM):
             fd=dd[f*DIRENTRYLEN:(f+1)*DIRENTRYLEN]
             es=(DIRTRACK*SECTORSPERTRACK+DIRSECTOR)*SECTORSIZE+f*DIRENTRYLEN
             #print("fd",fd,"entry",self.data[es:es+DIRENTRYLEN])
@@ -132,17 +160,8 @@ class Floppy:
                 print("Deleting entry",self.data[es:es+DIRENTRYLEN])
                 self.data[es:es+DIRENTRYLEN]=bytes([0x00]*DIRENTRYLEN)
 
-    def add(self,name,filename):
-        d=open(filename,"rb").read()
+    def addFile(self,name,d):
         entry=bytearray([0x00]*DIRENTRYLEN)
-
-        
-        if "." in name:
-            tok=name.split(".")
-            n=".".join(tok[:-1])
-            e=tok[-1]
-            name=n[:8].ljust(8)+"."+e
-
 
         nl=min(len(name),12)
         entry[:nl]=bytes(name[:nl].encode("utf-8"))
@@ -163,7 +182,7 @@ class Floppy:
 
         fp=0
         SECSIZE=SECTORSPERCLUSTER*SECTORSIZE
-        print("chain",[hex(c) for c in chain],"lu",lastUsage)
+        #print("chain",[hex(c) for c in chain],"lu",lastUsage)
         for c,n in zip(chain,chain[1:]+[lastUsage]):
             self.data[fs+c]=n
             secstart=c*SECSIZE
@@ -175,10 +194,11 @@ class Floppy:
 
         ds=(DIRTRACK*SECTORSPERTRACK+DIRSECTOR)*SECTORSIZE
         entryRec=False
-        for f in range(int(12*SECTORSIZE/DIRENTRYLEN)):
+        for f in range(DIRENTRYNUM):
             es=ds+f*DIRENTRYLEN
             if self.data[es]==0x00:
                 self.data[es:es+DIRENTRYLEN]=entry
+                print("Added entry",entry)
                 entryRec=True
                 break
         if not entryRec:
@@ -190,10 +210,15 @@ class Floppy:
             if val!=0xFE:
                 self.delSector(idx)
         ds=(DIRTRACK*SECTORSPERTRACK+DIRSECTOR)*SECTORSIZE
-        self.data[ds:ds+12*SECTORSIZE]=bytes([0x00]*12*SECTORSIZE)
+        self.data[ds:ds+DIRSECLEN*SECTORSIZE]=bytes([0x00]*12*SECTORSIZE)
 
-
-                                         
+    def printSummary(self):
+        print(self.getDiskName())
+        summary=" ".join([f"{n}={len(c)}K" for n,c in self.getDiskUsage().items()])
+        print(summary)
+        self.listdir()
+        for idx,(fname,sc) in enumerate(self.files.items()):
+            print(f"{idx+1:2})",fname,len(self.getFile(fname)),"bytes")                            
                           
     def printFat(self):
         fat=self.get(FATTRACK,FATSECTOR,160)
@@ -220,39 +245,72 @@ class Floppy:
             print(f"{t:2d}",status)
 
         
+def canonicalName(name):
+    if "." in name:
+        tok=name.split(".")
+        n=".".join(tok[:-1])
+        e=tok[-1]
+        name=n[:8].ljust(8)+"."+e
+    return name
 
+                  
 
 def extract(f,dirname):
-    pathlib.Path(sys.argv[3]).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
     for fname in f.files:
         with open(os.path.join(dirname,fname),"wb") as of:
             of.write(f.getFile(fname))
 
-    for idx,d in enumerate(f.getSystem()):        
-        with open(os.path.join(dirname,f"IPL{idx}"),"wb") as of:
+    for c,d in f.getSystem():        
+        with open(os.path.join(dirname,f"IPL{c}"),"wb") as of:
             of.write(d)
     
-        
-        
+
+
+            
+def pack(f,dirname):
+    for fname in os.listdir(dirname):        
+        if fname[:3]=="IPL":
+            d=open(os.path.join(dirname,fname),"rb").read()
+            f.addSystem(int(fname[3:]),d)
+    for fname in os.listdir(dirname):        
+        if fname[:3]!="IPL":
+            d=open(os.path.join(dirname,fname),"rb").read()
+            f.addFile(fname,d)
+
+
+
+            
+
+commands={
+    "help":lambda f: print("Available commands"+getLongOptions()),
+    "open":lambda f,opt: f.open(opt),
+    "save":lambda f,opt: f.save(opt),
+    "extract":extract,
+    "pack":pack,
+    "format":lambda f: f.format(),
+    "list":lambda f : f.printSummary(),
+    "listfat":lambda f : f.printFat(),
+}
+
+            
+def getLongOptions():
+    return [c+"=" if len(signature(f).parameters)>1 else c for (c,f) in commands.items()]        
+            
 
 if __name__=="__main__":
+
     if len(sys.argv)<2:
-        print("Usage",sys.argv[0],"filename [extract directory]")
+        print("Usage",sys.argv[0],"--command1[=args] --command2[=args]")
     else:
-        f=Floppy(sys.argv[1])        
-        print(f.getDiskName())
-        summary=" ".join([f"{n}={len(c)}K" for n,c in f.getDiskUsage().items()])
-        print(summary)
-        for idx,(fname,sc) in enumerate(f.files.items()):
-            print(f"{idx+1:2})",fname,len(f.getFile(fname)),"bytes")
-        if len(sys.argv)>2:
-            cmd=sys.argv[2]
-            if cmd=="extract":
-                if len(sys.argv)>2:
-                    extract(f,sys.argv[3])
-                else:
-                    print("Specify destination folder")
-            elif cmd=="fat":
-                f.printFat()
-            
-                
+
+        optlist,_=getopt.getopt(sys.argv[1:],"",getLongOptions())
+        f=Floppy()        
+        for (c,opt) in optlist:
+            func=commands[c[2:]]
+            if len(opt)>0:
+                func(f,opt)
+            else:
+                func(f)
+
+        

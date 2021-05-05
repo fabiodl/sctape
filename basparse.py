@@ -1,10 +1,12 @@
 from  section import KeyCode
+from util import removeExtension
 
 def writeFile(filename,l):
     with open(filename,"wb") as f:
         f.write(bytes(l))
 
-def writeBas(fname,d): #already parsed    
+def writeBas(filename,d): #already parsed    
+    fname=removeExtension(filename)
     codeChunks=[]
     for s in d["sections"]:
         if s["type"]=="bytes" and KeyCode.code[s["keycode"]]==KeyCode.BasicData:

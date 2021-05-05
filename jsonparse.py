@@ -1,5 +1,6 @@
 import json
 import numpy as np
+from util import removeExtension
 
 def hexString(d):
     return "".join([f"{v:02x}" for v in d])
@@ -41,8 +42,10 @@ def jsonSerialize(d):
 def hexList(s):
     return [ int(s[i:i+2],16) for i in range(0,len(s),2)]
 
-
-
+def writeJson(filename,d):
+    outfile=removeExtension(filename)+".json"
+    with open(outfile,"w") as f:
+        f.write(jsonSerialize(d))
 
 def jsonDeserialize(filename):
     d=json.loads(open(filename).read())
