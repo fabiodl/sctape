@@ -1,39 +1,50 @@
-==audiotobit.py==
+### Python Version
 
-Converts audio files to .bit files
+python 3
 
-Usage
+### Tapeconv
 
-python3 audiotobit.py filename.mp3/wav [threshold] 
+```bash
+python3 tapeconv.py inputFile output
+```
+or 
+```bash
+python3 tapeconv.py "*.ext" output
+```
 
-where threshold is in the range 0 to 1. 
+## Examples
 
-or
+All wave files  to remastered bit
 
-python3 audiotobit.py filename.mp3/wav auto
+```bash
+python3 tapeconv.py "*.wav" bit
+```
 
-searches for a suitable threshold automatically
+All bit files to .bas
 
-==bittowav.py==
+```bash
+python3 tapeconv.py "*.bit" bas
+```
 
-Converts .bit file to wav
+All bit files to remastered wav
 
-Usage
+```bash
+python3 tapeconv.py "*.bit" wav
+```
 
-python3 bittowav.py filename.bit
-
-
-==listContent.py==
-
-Lists the file[/s] inside a .bit file
-
-Usage 
-
-python3 listContent.py filename.bit 
-
-or
-
-python3 listContent.py directory
+### Floppy
+```bash
+python3 floppy.py --command1[=val] --command2[=val]
+```
 
 
+## Examples
+Extract files to folder **basic**
+```bash
+python3 floppy.py --open=diskbasic.sf7 --extract=basic
+```
 
+Create floppy image form folder **basic**
+```bash
+python3 floppy.py  --pack=basic --save=basic.sf7
+```
