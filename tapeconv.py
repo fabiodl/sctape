@@ -58,10 +58,10 @@ def convert(filename,outputtype):
 
 if __name__=="__main__":
     if len(sys.argv)<2:
-        print("Usage ",sys.argv[0]," filename inputfile outputtype")
-
-    for filename in sorted(glob.glob(sys.argv[1])):
-        try:
-            convert(filename,sys.argv[2])
-        except Exception as e:
-            print("Impossible to convert",filename,":",e)
+        print("Usage ",sys.argv[0]," inputfile outputtype")
+    else:
+        for filename in sorted(glob.glob(sys.argv[1])):
+            try:
+                convert(filename,sys.argv[2])
+            except Exception as e:
+                print("Impossible to convert",filename,":",e)
