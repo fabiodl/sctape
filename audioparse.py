@@ -95,12 +95,22 @@ def getStarts(pairs):
     return starts
 
 
-def getSections(filename,rhol,rhoh,pitch,removeSpikes=True):
+
+def getRawSection(filename,rhol,rhoh,pitch):
     bitrate,data=readAudio(filename)
     period=bitrate*pitch/1200
     levell=np.min(data)*rhol
     levelh=np.max(data)*rhoh
     #print("levels",levell,levelh,"period",period)
+    d={"bitrate":bitrate,"signal":getHisteresis(data,levell,levelh)}
+    return d
+    
+def getSections(filename,rhol,rhoh,pitch,removeSpikes=True):
+
+    #print("levels",levell,levelh,"period",period)
+    d=getRawSection(filename,rhol,rhoh,pitch)
+    pairs=list(lre(d["signal"]))
+
     pairs=list(lre(getHisteresis(data,levell,levelh)))
     starts=getStarts(pairs)
     if removeSpikes:
@@ -135,7 +145,7 @@ def getSections(filename,rhol,rhoh,pitch,removeSpikes=True):
             sl.pushLevel(t,pairs[offset][0],pairs[offset][1])
             offset+=1
     sl.finalize()
-    d={"bitrate":bitrate,"sections":sl.sections}
+    d["sections"]=sl.sections
     return d
 
 
