@@ -6,6 +6,7 @@ import bitparse
 import basparse
 import wavparse
 import tzxparse
+import basicparse
 from section import parseBytesSections,printSummary,listContent
 from  util import removeExtension,rhoSweep
 
@@ -46,7 +47,8 @@ writers={
     "wav":wavRemaster,
     "list":lambda f,d: print(f,listContent(d)),
     "summary":lambda f,d: None,
-    "tzx":tzxparse.writeTzx
+    "tzx":tzxparse.writeTzx,
+    "basic":basicparse.writeBasic,
 }
 
 
