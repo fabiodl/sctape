@@ -283,7 +283,7 @@ def pack(f,dirname):
             
 
 commands={
-    "help":lambda f: print("Available commands"+getLongOptions()),
+    "help":lambda f: print("Available commands "+" ".join(getLongOptions())),
     "open":lambda f,opt: f.open(opt),
     "save":lambda f,opt: f.save(opt),
     "extract":extract,
