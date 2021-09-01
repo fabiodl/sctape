@@ -31,6 +31,7 @@ def rhoSweep(func,filename,rho,lperiod):
                 except Exception as e:
                     print(f"Level at {rho:0.2f} failed:"+str(e),end="\r")
                     print("")
+                    # raise
         raise Exception("No level found")
     else:
         return func(filename,rho,rho,lperiod)

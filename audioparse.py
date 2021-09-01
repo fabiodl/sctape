@@ -110,8 +110,8 @@ def getSections(filename,rhol,rhoh,pitch,removeSpikes=True):
     #print("levels",levell,levelh,"period",period)
     d=getRawSection(filename,rhol,rhoh,pitch)
     pairs=list(lre(d["signal"]))
-
-    pairs=list(lre(getHisteresis(data,levell,levelh)))
+    period=d["bitrate"]*pitch/1200
+    
     starts=getStarts(pairs)
     if removeSpikes:
         #print("before removal",len(pairs))
