@@ -162,7 +162,8 @@ class Floppy:
 
     def addFile(self,name,d):
         entry=bytearray([0x00]*DIRENTRYLEN)
-
+        for i in range(12):
+            entry[i]=0x20
         nl=min(len(name),12)
         entry[:nl]=bytes(name[:nl].encode("utf-8"))
 

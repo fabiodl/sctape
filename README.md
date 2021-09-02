@@ -34,7 +34,7 @@ python3 tapeconv.py "*.bit" wav
 
 ### Floppy
 ```bash
-python3 floppy.py --command1[=val] --command2[=val]
+python3 floppy.py --operation1[=val] --operation2[=val] ... --operationN[=val]
 ```
 
 
