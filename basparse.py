@@ -18,4 +18,16 @@ def writeBas(filename,d): #already parsed
         for idx,c in enumerate(codeChunks):
             writeFile(f"{fname}{idx}.bas",c)
 
+
+
+def writeBin(filename,d): #already parsed    
+    fname=removeExtension(filename)
+    codeChunks=[]
+    idx=0
+    for s in d["sections"]:
+        if s["type"]=="bytes":
+            writeFile(f"{fname}{idx}.bin",s["bytes"])            
+            idx+=1
+
+
     

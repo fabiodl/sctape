@@ -49,6 +49,7 @@ writers={
     "summary":lambda f,d: None,
     "tzx":tzxparse.writeTzx,
     "basic":basicparse.writeBasic,
+    "bin":basparse.writeBin
 }
 
 
