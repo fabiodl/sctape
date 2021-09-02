@@ -1,3 +1,4 @@
+import numpy as np
 from section import SectionList,KeyCode
 from util import removeExtension
 
