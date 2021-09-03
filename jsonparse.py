@@ -7,7 +7,7 @@ def hexString(d):
 
 def elemSerialize(x):
     t=type(x)
-    #print("type",t)
+    print("type",t)
     if t in serializers:
         return serializers[t](x)
     return x
@@ -29,6 +29,7 @@ def dictSerialize(inp):
     
 serializers={
     np.int64:lambda x:int(x),
+    np.ndarray: lambda x:x.tolist(),
     list: listSerialize,
     dict: dictSerialize
 }
@@ -47,7 +48,7 @@ def writeJson(filename,d):
     with open(outfile,"w") as f:
         f.write(jsonSerialize(d))
 
-def jsonDeserialize(filename):
+def jsonDeserialize(filename,opts):
     d=json.loads(open(filename).read())
     for s in d["sections"]:
         if s["type"]=="bytes":

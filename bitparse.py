@@ -20,7 +20,7 @@ def maybeByte(bs):
         
 
 
-def getSections(filename):
+def getSections(filename,opts):
     data=open(filename).read()
     sl=SectionList()    
     offset=0

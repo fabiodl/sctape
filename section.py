@@ -109,6 +109,8 @@ def parseBytesSections(sl,exceptOnError):
   for s in sl:
       if s["type"]=="bytes":
           if not parseBytes(s,s) and exceptOnError:
+              for sec in sl:
+                  print("Section",sec["t"],sec["type"])
               raise Exception("Error in parsing Section")
 
 

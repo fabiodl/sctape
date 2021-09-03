@@ -9,7 +9,7 @@ import tzxparse
 import basicparse
 from section import parseBytesSections,printSummary,listContent
 from  util import removeExtension,rhoSweep
-
+import getopt
 
 
 
@@ -22,8 +22,13 @@ def audioToRemasteredBit(filename,levell,levelh,pitch): #levels are referred to 
     return d
 
 
-def audioRead(filename):
-    return rhoSweep(audioToRemasteredBit,filename,"auto",1)
+def audioRead(filename,opts):
+    if "level" in opts:
+        lev=float(opts["level"])
+        d=audioparse.getSections(filename,lev,lev,1)                   
+        return d
+    else:    
+        return rhoSweep(audioToRemasteredBit,filename,"auto",1)
 
 
 def wavRemaster(filename,d):
@@ -53,13 +58,14 @@ writers={
 }
 
 
-def convert(filename,outputtype):
+def convert(filename,outputtype,opts):
+    #print("specified options",opts)
     if outputtype=="tzx":        
         d=audioparse.getRawSection(filename,0.33,0.33,1)
     else:
         ext=filename.split(".")[-1]
-        d=readers[ext](filename)
-        parseBytesSections(d["sections"],False)
+        d=readers[ext](filename,opts)
+        parseBytesSections(d["sections"],"ignore_section_errors" not in opts)
         if outputtype!="list":
             printSummary(d,False)
     writers[outputtype](filename,d)
@@ -69,9 +75,10 @@ if __name__=="__main__":
     if len(sys.argv)<3:
         print("Usage ",sys.argv[0]," inputfile outputtype")
     else:
-        for filename in sorted(glob.glob(sys.argv[1])):
+        optlist,args=getopt.getopt(sys.argv[1:],"",["level=","ignore_section_errors"])
+        for filename in sorted(glob.glob(args[0])):
             try:
-                convert(filename,sys.argv[2])
+                convert(filename,args[1],{k[2:]:v for k,v in optlist})
             except Exception as e:
                 print("Impossible to convert",filename,":",e)
                 raise
