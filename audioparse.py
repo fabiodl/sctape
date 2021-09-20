@@ -1,10 +1,11 @@
 import pydub 
 import numpy as np
-import itertools
+
 import json
+from scipy import signal
 
 from section import SectionList
-
+from numba import njit
 
 #https://stackoverflow.com/questions/53633177/how-to-read-a-mp3-audio-file-into-a-numpy-array-save-a-numpy-array-to-mp3
 
@@ -25,129 +26,110 @@ def getHisteresis(data,levell,levelh):
     return np.where(data>levelh,1,np.where(data<levell,-1,0))   
 
 
-#https://stackoverflow.com/questions/1066758/find-length-of-sequences-of-identical-values-in-a-numpy-array-run-length-encodi/32681075
-def lre(bits):
-  for bit, group in itertools.groupby(bits):
-      yield (bit,len(list(group)))
 
+hs=44100 # resample sample rate
 
-def checkLengths(l,minv,maxv,ignoreBegin,ignoreEnd):
-    if l[0]<minv:
-        return False
-    if l[0]>maxv and not ignoreBegin:
-        return False
-    for d in l[1:-1]:
-        if d<minv or d>maxv:
-            return False
-    if l[-1]<minv:
-        return False
-    if l[-1]>maxv and not ignoreEnd:
-        return False
-    return True
+@njit
+def binarize(res,pth,nth,delta):
+    s=np.zeros_like(res)
+    v=0
+    #alpha s.t. for 10 period far it's 0.1
+    alpha=  0.1**(1 /(hs/1200*10)) 
+    thalpha= 0.1**(1/hs/1200*3)
+    m=0
+    hth,lth=pth,nth #dynamic thresholds
 
-def isZero(lop,lperiod,ignoreBegin,ignoreEnd):
-    if len(lop)<2:
-        return False
-    l=[lop[i][1] for i in range(2)]
-    ok=checkLengths(l,3/8*lperiod,3/4*lperiod,ignoreBegin,ignoreEnd)
-    return ok and lop[0][0]*lop[1][0]==-1
-
-def isOne(lop,lperiod,ignoreBegin,ignoreEnd):
-    if len(lop)<4:
-        return False
-    l=[lop[i][1] for i in range(4)]
-    ok=checkLengths(l,1/8*lperiod,3/8*lperiod,ignoreBegin,ignoreEnd)
-    for i in range(3):
-        if lop[i][0]*lop[i+1][0]!=-1:
-            ok=False
-    return ok
-      
-
-
-def maybeByte(pairs,period,firstByte):
-    n=0
-    offset=0
-    if isZero(pairs[offset:offset+2],period,not firstByte,False):            
-        offset+=2
-    else:
-        return None
-    for i in range(8):
-        if isZero(pairs[offset:offset+2],period,False,False):
-            offset+=2
-        elif isOne(pairs[offset:offset+4],period,False,False):
-            offset+=4
-            n+=(1<<i)
-        else:
-            return None
-    if isOne(pairs[offset:offset+4],period,False,False) and isOne(pairs[offset+4:offset+8],period,False,True):
-        offset+=8
-    else:
-        return None
-    return offset,n
-                
-
-def getStarts(pairs):
-    starts=[]
-    tl=0
-    for (v,l) in pairs:        
-        starts.append(tl)
-        tl+=l
-    return starts
-
-
-
-def getRawSection(filename,rhol,rhoh,pitch):
-    bitrate,data=readAudio(filename)
-    period=bitrate*pitch/1200
-    levell=np.min(data)*rhol
-    levelh=np.max(data)*rhoh
-    #print("levels",levell,levelh,"period",period)
-    d={"bitrate":bitrate,"signal":getHisteresis(data,levell,levelh)}
-    return d
     
-def getSections(filename,rhol,rhoh,pitch,removeSpikes=True):
 
-    #print("levels",levell,levelh,"period",period)
-    d=getRawSection(filename,rhol,rhoh,pitch)
-    pairs=list(lre(d["signal"]))
-    period=d["bitrate"]*pitch/1200
+    for t in range(delta,len(res)-delta):
+        #print("lth,hth",lth,hth)
+        m=alpha*m+(1-alpha)*res[t]
+        if res[t]>pth:
+            hth=thalpha*hth+(1-thalpha)*res[t]
+        if res[t]<nth:
+            lth=thalpha*lth+(1-thalpha)*res[t]
+        
+        if  res[t-delta]<lth  and res[t+delta]>hth and res[t-1]<m and res[t]>m:
+            v=1
+        elif res[t-delta]>hth  and res[t+delta]<lth and res[t-1]>m and res[t]<m:
+            v=-1
+        s[t]=v
+    return s
     
-    starts=getStarts(pairs)
-    if removeSpikes:
-        #print("before removal",len(pairs))
-        idx=[i for i,(v,l) in enumerate(pairs) if l>period/8]
-        pairs=[pairs[i] for i in idx]
-        starts=[starts[i] for i in idx]
-        #print("after removal",len(pairs))
-
-    offset=0
-
+@njit
+def diffBinarize(dr,levell,levelh):
     t=0
-    sl=SectionList ()
-    follower=False
-    while offset<len(pairs):
-        t=starts[offset]
-        bi=maybeByte(pairs[offset:offset+4*11],period,offset==0)
-        if bi is not None:
-            follower=True
-        if follower:
-            #print(pairs[offset:offset+4*11],bi)
-            if bi is None:
-                follower=False
-        if bi is not None:
-            off,val=bi
-            sl.pushByte(t,val)
-            offset+=off
-        elif isOne(pairs[offset:offset+4],period,True,False):
-            sl.pushHeader(t)
-            offset+=4
-        else:
-            sl.pushLevel(t,pairs[offset][0],pairs[offset][1])
-            offset+=1
-    sl.finalize()
-    d["sections"]=sl.sections
-    return d
+    startt=0
+    sign=1 if dr[0]>0 else -1
 
+    concdr=np.zeros_like(dr)
+    for t in range(len(dr)):
+        s=1 if dr[t]>0 else -1
+        if s!=sign:
+            #med=int(np.round((startt+t-1)/2))
+            tot=np.sum(dr[startt:t])
+            med=np.argmin(np.abs(np.cumsum(dr[startt:t])-tot))+startt
+            concdr[med]=tot
+            startt=t
+            sign=s
+
+    s=np.zeros_like(dr)
+    v=-1        
+    hth=levelh*np.max(concdr)
+    lth=levell*np.min(concdr)
+    for t in range(len(dr)):
+
+        if concdr[t]>hth:
+            v=1
+        elif concdr[t]<lth:
+            v=-1
+        s[t]=v
+    return s
+
+
+
+def getResampled(y,levell,levelh,fr):
+    print("resampling")
+    res=signal.resample(y,int(np.ceil(len(y)*hs/fr)))
+    print("levels",levell,levelh)    
+    #pth=levelh*np.max(res)
+    #nth=levell*np.min(res)
+    #delta=int(round(hs/4800/3))
+    #return binarize(res,pth,nth,delta)
+    dr=np.diff(res)
+    return diffBinarize(dr,levell,levelh)
+    
+
+
+def getRawSection(filename,rhol,rhoh,opts):
+    bitrate,data=readAudio(filename)
+
+    mode="diff"
+    if "mode" in opts:
+        mode=opts["mode"]
+    if "pitch" in opts:
+        pitch=float(opts["pitch"])
+    else:
+        pitch=1
+
+    if mode=="absolute":
+        pitch=1                
+        period=bitrate*pitch/1200
+        levell=np.min(data)*rhol
+        levelh=np.max(data)*rhoh
+        print("levels",levell,levelh,"period",period)
+        d={"bitrate":bitrate,
+           "signal":getHisteresis(data,levell,levelh)
+        }
+    elif mode=="diff":
+        d={
+            "bitrate":44100,
+            "signal":getResampled(data,rhol,rhoh,bitrate)
+        }
+    else:
+        raise Exception("Unkown mode",mode+" known modes are "+" ".join(["absolute","diff"]))
+    return d
+    
 
 
 

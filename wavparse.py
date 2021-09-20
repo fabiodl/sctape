@@ -10,6 +10,9 @@ Zero= np.hstack([v*np.ones(int(sampleRate/1200/2),dtype=np.int16) for v in [val,
 One=np.hstack([v*np.ones(int(sampleRate/1200/4),dtype=np.int16) for v in [val,-val,val,-val]]).tobytes()
 conv={' ':Space,'0':Zero,'1':One}
 
+
+
+
 def writeWav(filename,data):
     obj = wave.open(filename,'wb')
     obj.setnchannels(1) # mono

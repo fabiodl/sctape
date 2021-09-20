@@ -1,5 +1,6 @@
 import glob
 import sys
+import os
 import jsonparse
 import audioparse
 import bitparse
@@ -7,14 +8,19 @@ import basparse
 import wavparse
 import tzxparse
 import basicparse
-from section import parseBytesSections,printSummary,listContent
+from section import parseBytesSections,printSummary,listContent,getSections
 from  util import removeExtension,rhoSweep
 import getopt
+from pathlib import Path
 
 
-
-def audioToRemasteredBit(filename,levell,levelh,pitch): #levels are referred to max value, lperiod in seconds
-    d=audioparse.getSections(filename,levell,levelh,pitch)
+def audioToRemasteredBit(filename,levell,levelh,opts): #levels are referred to max value, lperiod in seconds
+    d=audioparse.getRawSection(filename,levell,levelh,opts)
+    if "pitch" in opts:
+        pitch=float(opts["pitch"])
+    else:
+        pitch=1
+    d=getSections(d,pitch)
     if len([s for s in d["sections"] if s["type"]=="bytes"])<2:
         raise Exception("nothing to parse")
 
@@ -25,10 +31,10 @@ def audioToRemasteredBit(filename,levell,levelh,pitch): #levels are referred to 
 def audioRead(filename,opts):
     if "level" in opts:
         lev=float(opts["level"])
-        d=audioparse.getSections(filename,lev,lev,1)                   
+        d=audioparse.getRawSection(filename,lev,lev,opts)                   
         return d
     else:    
-        return rhoSweep(audioToRemasteredBit,filename,"auto",1)
+        return rhoSweep(audioToRemasteredBit,filename,"auto",opts)
 
 
 def wavRemaster(filename,d):
@@ -36,12 +42,18 @@ def wavRemaster(filename,d):
     filename="R_"+removeExtension(filename)+".wav"
     wavparse.writeWav(filename,bs)
 
+def tzxRemaster(filename,d):
+    bs=bitparse.toBitRemaster(d)
+    filename="R_"+removeExtension(filename)+".tzx"
+    tzxparse.writeTzxFromBs(filename,bs)
 
+    
 readers={
     "mp3":audioRead,
     "wav":audioRead,
     "bit":bitparse.getSections,
-    "json":jsonparse.jsonDeserialize
+    "json":jsonparse.jsonDeserialize,
+    "tzx":tzxparse.readTzx
 }
 
 writers={
@@ -57,28 +69,72 @@ writers={
     "bin":basparse.writeBin
 }
 
+remrate=44100
+
 
 def convert(filename,outputtype,opts):
-    #print("specified options",opts)
-    if outputtype=="tzx":        
-        d=audioparse.getRawSection(filename,0.33,0.33,1)
+    print("specified options",opts)
+    ext=filename.split(".")[-1]
+    print("Reading input")
+    d=readers[ext](filename,opts)
+    print("Identifying bytes")
+    if "pitch" in opts:
+        pitch=float(opts["pitch"])
     else:
-        ext=filename.split(".")[-1]
-        d=readers[ext](filename,opts)
-        parseBytesSections(d["sections"],"ignore_section_errors" not in opts)
-        if outputtype!="list":
-            printSummary(d,False)
-    writers[outputtype](filename,d)
+        pitch=1
+
+    getSections(d,pitch)
+    ignoreSectionErrors= "ignore_section_errors" in opts
+    print("Identifying sections")
+    parseBytesSections(d["sections"],not ignoreSectionErrors)
+    if outputtype!="list":
+        printSummary(d,False)
+
+    if "remaster" in opts:
+        remaster=opts["remaster"]
+        remlevels=["signal","bit","section"]
+        if remaster not in remlevels:
+            errmessage="Unknown remaster level "+remaster+"options are "+" ".join(remLevel)
+            raise Exception(errmessage)        
+    else:
+        if "signal" not in d:
+            remaster="bit"
+        else:
+            remaster="signal"        
+
+    if remaster=="section":
+        print("Remastering sections")
+        d["bitrate"]=remrate
+        d["signal"]=bitparse.genSignal(d,remrate,True)
+    elif remaster=="bit":
+        print("Remastering bits")
+        d["bitrate"]=remrate
+        d["signal"]=bitparse.genSignal(d,remrate,False)
+    print("Writing output")
+    writers[outputtype](filename,d)    
 
 
 if __name__=="__main__":
+    options=["level=","pitch=","mode=","ignore_section_errors","remaster="]
     if len(sys.argv)<3:
         print("Usage ",sys.argv[0]," inputfile outputtype")
+        print("Available options",options)
     else:
-        optlist,args=getopt.getopt(sys.argv[1:],"",["level=","ignore_section_errors"])
-        for filename in sorted(glob.glob(args[0])):
+        optlist,args=getopt.getopt(sys.argv[1:],"",options)
+        opts={k[2:]:v for k,v in optlist}
+        if os.path.isfile(args[0]):
+            files=[args[0]]
+        else:
+            files=sorted(glob.glob(args[0]))
+            
+        if len(args)>=1 and len(files)==0:            
+            print(f"No such input file[s]: '{args[0]}'",)
+
+        for filename in files:
             try:
-                convert(filename,args[1],{k[2:]:v for k,v in optlist})
+                print("converting",filename)
+                print("target:",args[1])
+                convert(filename,args[1],opts)
             except Exception as e:
                 print("Impossible to convert",filename,":",e)
                 raise

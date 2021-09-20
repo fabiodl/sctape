@@ -44,12 +44,13 @@ def getSections(filename,opts):
 
 
 
+
+
 def encodeByte(b):
     return "0"+ "".join(["1" if ((b>>i)&0x01)==1 else "0" for i in range(8)])+"11"
 
 def encodeBytes(x):
     return "".join([encodeByte(b) for b in x])
-
 
 def toBitRaw(d):
     data=""
@@ -81,6 +82,30 @@ def toBitRemaster(d,fastStart=True):
             data+=" "*n+"1"*3600+encodeBytes(s["bytes"])
             fastStart=False
     return data
+
+
+
+
+
+
+
+def genSignal(d,sampleRate,sectionRemaster):
+    val=1
+    Space= np.zeros(int(sampleRate/1200))
+    Zero= np.hstack([v*np.ones(int(sampleRate/1200/2)) for v in [val,-val]])
+    One=np.hstack([v*np.ones(int(sampleRate/1200/4)) for v in [val,-val,val,-val]])
+    conv={' ':Space,'0':Zero,'1':One}
+    print("len",len(Space),len(One),len(Zero))
+    if sectionRemaster:
+        bits=toBitRemaster(d,True)
+    else:
+        bits=toBitRaw(d)
+    sig=np.hstack([conv[b] for b in bits])
+    print("bits",len(bits),"shape",np.shape(sig))
+    return sig
+    
+
+
 
 def writeBit(filename,d,remaster):
     outfile=removeExtension(filename)+".bit"

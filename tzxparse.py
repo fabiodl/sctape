@@ -1,6 +1,6 @@
 from util import removeExtension
 import numpy as np
-
+from itertools import chain
 def leint(x,n):
     l=[]
     for i in range(n):
@@ -82,6 +82,25 @@ def encode(trate,d):
     return enc.data
 
 
+class BitEncoder:
+    def __init__(self):
+        self.sampleRate=44100
+        val=1
+        Space= np.zeros(int(self.sampleRate/1200))
+        Zero= np.hstack([v*np.ones(int(self.sampleRate/1200/2)) for v in [val,-val]])
+        One=np.hstack([v*np.ones(int(self.sampleRate/1200/4)) for v in [val,-val,val,-val]])
+        self.conv={' ':Space,'0':Zero,'1':One}
+
+
+def writeTzxFromBs(filename,bs):
+    be=BitEncoder()
+    d=np.hstack([be.conv[s] for s in bs])
+    data=getFileHeader()
+    trate=int(np.round(3.5E6/be.sampleRate))
+    data+=encode(trate,d)
+    with open(filename,"wb") as f:
+        f.write(data)
+
 
 def writeTzx(filename,d):
     filename=removeExtension(filename)+".tzx"
@@ -95,6 +114,57 @@ def writeTzx(filename,d):
     with open(filename,"wb") as f:
         f.write(data)
 
+
+def le(x):
+    r=0
+    for i,v in enumerate(x):
+        r+=(256**i)*v
+    return r
+        
+
+def getBlocks(fname):
+    blocks=[]
+    with open(fname,"rb") as f:
+        data=f.read()
+        ptr=0
+        while ptr<len(data):            
+            begin=ptr
+            bid=data[ptr]        
+            ptr+=1
+            if bid==0x5A:
+                ptr+=9
+            elif bid==0x15:
+                ptr+=le(data[ptr+5:ptr+8])+8
+            else:
+                raise Exception("Unknow block "+bid)
+            blocks.append(data[begin:ptr])
+    return blocks
+
+
+
+
+
+def tzxByteExpand(b):
+    return [1 if b&(1<<i) else -1 for i in range(7,-1,-1)]  
+
+
+tzxBet=np.array([tzxByteExpand(i) for i in range(256)])
+
+def readTzx(filename,opts):
+    blocks=getBlocks(filename)
+    d=np.zeros(0)
+    for bl in blocks:
+        if bl[0]==0x15:
+            print("found block")
+            conv=tzxBet[list(bl[9:])]    
+            d=np.hstack([d,conv.reshape(-1)])
+    dic={
+        "signal":np.array(d),
+        "bitrate":44100 #FIX ME
+    }
+    print("signal shape",np.shape(dic["signal"]))
+    return dic
+        
 
 def writeTzxNoresample(filename,d):
     filename=removeExtension(filename)+".tzx"

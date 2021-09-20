@@ -1,5 +1,6 @@
 from util import bigEndian,printable
 import numpy as np
+import itertools
 
 class KeyCode:
     BasicHeader,MachineHeader=0x16,0x26
@@ -90,6 +91,9 @@ def parseBytes(si,so):
             so["Dummy"]=dummyData
         elif secType==KeyCode.BasicData or secType==KeyCode.MachineData:
             program,parity,dummyData=d[:-3],d[-3:-2],d[-2:]
+            if not program or not parity:
+                so["fail.notenoughData"]=d
+                return False
             checkSum=np.sum(program+parity)&0xFF
             if checkSum!=0:
                 so["fail.checksum"]=checkSum
@@ -106,12 +110,19 @@ def parseBytes(si,so):
     return True
 
 def parseBytesSections(sl,exceptOnError):
-  for s in sl:
-      if s["type"]=="bytes":
-          if not parseBytes(s,s) and exceptOnError:
-              for sec in sl:
-                  print("Section",sec["t"],sec["type"])
-              raise Exception("Error in parsing Section")
+    error=False
+    for s in sl:
+        if s["type"]=="bytes":
+            if not parseBytes(s,s):
+                error=True
+
+    if error:
+        print("Section errors, decoded",len(sl),"sections")
+        if len(sl)<10:
+            for sec in sl:
+                print("  Section at",sec["t"],sec["type"])
+        if exceptOnError:
+            raise Exception("Error in parsing Section")
 
 
 
@@ -143,3 +154,126 @@ def listContent(d):
             if c in [KeyCode.BasicHeader,KeyCode.MachineHeader]:                
                 filenames.append(s["Filename"])
     return filenames
+
+#https://stackoverflow.com/questions/1066758/find-length-of-sequences-of-identical-values-in-a-numpy-array-run-length-encodi/32681075
+def lre(bits):
+  for bit, group in itertools.groupby(bits):
+      yield (bit,len(list(group)))
+
+
+def getStarts(pairs):
+    starts=[]
+    tl=0
+    for (v,l) in pairs:        
+        starts.append(tl)
+        tl+=l
+    return starts
+
+def checkLengths(l,minv,maxv,ignoreBegin,ignoreEnd):
+    if l[0]<minv:
+        return False
+    if l[0]>maxv and not ignoreBegin:
+        return False
+    for d in l[1:-1]:
+        if d<minv or d>maxv:
+            return False
+    if l[-1]<minv:
+        return False
+    if l[-1]>maxv and not ignoreEnd:
+        return False
+    return True
+
+def isZero(lop,lperiod,ignoreBegin,ignoreEnd):
+    if len(lop)<2:
+        return False
+    l=[lop[i][1] for i in range(2)]
+    ok=checkLengths(l,3/8*lperiod,3/4*lperiod,ignoreBegin,ignoreEnd)
+    return ok and lop[0][0]*lop[1][0]==-1
+
+def isOne(lop,lperiod,ignoreBegin,ignoreEnd):
+    if len(lop)<4:
+        return False
+    l=[lop[i][1] for i in range(4)]
+    ok=checkLengths(l,1/8*lperiod,3/8*lperiod,ignoreBegin,ignoreEnd)
+    for i in range(3):
+        if lop[i][0]*lop[i+1][0]!=-1:
+            ok=False
+    return ok
+      
+
+
+
+
+
+def maybeByte(pairs,period,firstByte):
+    n=0
+    offset=0
+    if isZero(pairs[offset:offset+2],period,not firstByte,False):            
+        offset+=2
+    else:
+        return None
+    for i in range(8):
+        if isZero(pairs[offset:offset+2],period,False,False):
+            offset+=2
+        elif isOne(pairs[offset:offset+4],period,False,False):
+            offset+=4
+            n+=(1<<i)
+        else:
+            return None
+    if isOne(pairs[offset:offset+4],period,False,False) and isOne(pairs[offset+4:offset+8],period,False,True):
+        offset+=8
+    else:
+        return None
+    return offset,n
+                
+
+
+def getSections(d,pitch,removeSpikes=True):
+
+    #print("levels",levell,levelh,"period",period)
+    if "signal" not in d:
+        print("No signal analysis")
+        return
+    pairs=list(lre(d["signal"]))
+    period=d["bitrate"]*pitch/1200
+    
+    starts=getStarts(pairs)
+    if removeSpikes:
+        #print("before removal",len(pairs))
+        idx=[i for i,(v,l) in enumerate(pairs) if l>period/8]
+        pairs=[pairs[i] for i in idx]
+        starts=[starts[i] for i in idx]
+        #print("after removal",len(pairs))
+
+    offset=0
+
+    t=0
+    sl=SectionList ()
+    follower=False
+    while offset<len(pairs):
+        t=starts[offset]
+        bi=maybeByte(pairs[offset:offset+4*11],period,offset==0)
+        if bi is not None:
+            follower=True
+        if follower:
+            #print(pairs[offset:offset+4*11],bi)
+            if bi is None:
+                follower=False
+        if bi is not None:
+            off,val=bi
+            sl.pushByte(t,val)
+            offset+=off
+        elif isOne(pairs[offset:offset+4],period,True,False):
+            sl.pushHeader(t)
+            offset+=4
+        else:
+            sl.pushLevel(t,pairs[offset][0],pairs[offset][1])
+            offset+=1
+    sl.finalize()
+    d["sections"]=sl.sections
+    return d
+
+
+
+    
+
