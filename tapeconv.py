@@ -72,6 +72,10 @@ writers={
 remrate=44100
 
 
+def addSuffix(filename,suff):
+    tok=filename.split(".")
+    return ".".join(tok[:-1])+suff+"."+tok[-1]
+
 def convert(filename,outputtype,opts):
     print("specified options",opts)
     ext=filename.split(".")[-1]
@@ -106,10 +110,12 @@ def convert(filename,outputtype,opts):
         print("Remastering sections")
         d["bitrate"]=remrate
         d["signal"]=bitparse.genSignal(d,remrate,True)
+        filename=addSuffix(filename,"_rs")
     elif remaster=="bit":
         print("Remastering bits")
         d["bitrate"]=remrate
         d["signal"]=bitparse.genSignal(d,remrate,False)
+        filename=addSuffix(filename,"_rb")
     print("Writing output")
     writers[outputtype](filename,d)    
 
