@@ -1,4 +1,3 @@
-from util import removeExtension
 import numpy as np
 from itertools import chain
 def leint(x,n):
@@ -103,7 +102,6 @@ def writeTzxFromBs(filename,bs):
 
 
 def writeTzx(filename,d):
-    filename=removeExtension(filename)+".tzx"
     resample=44100
     trate=int(np.round(3.5E6/resample))
     bitrate=d["bitrate"]
@@ -150,7 +148,7 @@ def tzxByteExpand(b):
 
 tzxBet=np.array([tzxByteExpand(i) for i in range(256)])
 
-def readTzx(filename,opts):
+def readTzx(filename,opts=None):
     blocks=getBlocks(filename)
     d=np.zeros(0)
     for bl in blocks:

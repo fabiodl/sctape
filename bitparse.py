@@ -1,6 +1,5 @@
 import numpy as np
 from section import SectionList,KeyCode
-from util import removeExtension
 
 def maybeByte(bs):
     if len(bs)<11:
@@ -95,21 +94,20 @@ def genSignal(d,sampleRate,sectionRemaster):
     Zero= np.hstack([v*np.ones(int(sampleRate/1200/2)) for v in [val,-val]])
     One=np.hstack([v*np.ones(int(sampleRate/1200/4)) for v in [val,-val,val,-val]])
     conv={' ':Space,'0':Zero,'1':One}
-    print("len",len(Space),len(One),len(Zero))
+    
     if sectionRemaster:
         bits=toBitRemaster(d,True)
     else:
         bits=toBitRaw(d)
     sig=np.hstack([conv[b] for b in bits])
-    print("bits",len(bits),"shape",np.shape(sig))
+    
     return sig
     
 
 
 
 def writeBit(filename,d,remaster):
-    outfile=removeExtension(filename)+".bit"
-    with open(outfile,"w") as f:
+    with open(filename,"w") as f:
         if remaster:
             f.write(toBitRemaster(d))
         else:

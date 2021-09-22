@@ -43,8 +43,7 @@ def jsonSerialize(d):
 def hexList(s):
     return [ int(s[i:i+2],16) for i in range(0,len(s),2)]
 
-def writeJson(filename,d):
-    outfile=removeExtension(filename)+".json"
+def writeJson(outfile,d):
     with open(outfile,"w") as f:
         f.write(jsonSerialize(d))
 

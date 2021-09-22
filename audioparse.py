@@ -22,7 +22,7 @@ def readAudio(f):
 
 
 
-def getHisteresis(data,levell,levelh):
+def getAbsolute(data,levell,levelh):
     return np.where(data>levelh,1,np.where(data<levell,-1,0))   
 
 
@@ -68,8 +68,8 @@ def diffBinarize(dr,levell,levelh):
         if s!=sign:
             #med=int(np.round((startt+t-1)/2))
             tot=np.sum(dr[startt:t])
-            med=np.argmin(np.abs(np.cumsum(dr[startt:t])-tot))+startt
-            concdr[med]=tot
+            med=np.argmin(np.abs(np.cumsum(dr[startt:t])-tot/2))            
+            concdr[startt+med]=tot
             startt=t
             sign=s
 
@@ -87,23 +87,39 @@ def diffBinarize(dr,levell,levelh):
     return s
 
 
+class Cache:
+    def __init__(self):
+        self.name=None
+        self.data=None
+        
+    def set(self,filename):
+        if self.name!=filename:
+            self.data=None
+            self.name=filename
+            
+cache=Cache()            
 
 def getResampled(y,levell,levelh,fr):
-    print("resampling")
-    res=signal.resample(y,int(np.ceil(len(y)*hs/fr)))
-    print("levels",levell,levelh)    
+    if cache.data is None:
+        print("resampling")
+        res=signal.resample(y,int(np.ceil(len(y)*hs/fr)))
+        dr=np.diff(res)
+        cache.data=dr
+    dr=cache.data
+
+    #print("levels",levell,levelh)    
     #pth=levelh*np.max(res)
     #nth=levell*np.min(res)
     #delta=int(round(hs/4800/3))
     #return binarize(res,pth,nth,delta)
-    dr=np.diff(res)
+
     return diffBinarize(dr,levell,levelh)
     
 
 
 def getRawSection(filename,rhol,rhoh,opts):
     bitrate,data=readAudio(filename)
-
+    cache.set(filename)
     mode="diff"
     if "mode" in opts:
         mode=opts["mode"]
@@ -117,9 +133,9 @@ def getRawSection(filename,rhol,rhoh,opts):
         period=bitrate*pitch/1200
         levell=np.min(data)*rhol
         levelh=np.max(data)*rhoh
-        print("levels",levell,levelh,"period",period)
+        #print("levels",levell,levelh,"period",period)
         d={"bitrate":bitrate,
-           "signal":getHisteresis(data,levell,levelh)
+           "signal":getAbsolute(data,levell,levelh)
         }
     elif mode=="diff":
         d={

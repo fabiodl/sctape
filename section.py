@@ -67,6 +67,7 @@ def parseBytes(si,so):
             checkSum=np.sum(filename+programLength+parity)&0xFF
             if checkSum!=0:
                 so["fail.checksum"]=checkSum
+                print("*checksum fail")
                 return False
             so["keycode"]=KeyCode.name[secType]            
             so["Filename"]="".join([chr(c) for c in filename])
@@ -81,6 +82,7 @@ def parseBytes(si,so):
             filename,programLength,startAddr,parity,dummyData=splitChunks(d,cl)
             checkSum=np.sum(filename+programLength+startAddr+parity)&0xFF
             if checkSum!=0:
+                print("*checksum fail")
                 so["fail.checksum"]=checkSum
                 return False
             so["keycode"]=KeyCode.name[secType]            
@@ -96,9 +98,12 @@ def parseBytes(si,so):
                 return False
             checkSum=np.sum(program+parity)&0xFF
             if checkSum!=0:
+                print("*checksum fail")
                 so["fail.checksum"]=checkSum
                 so["fail.length"]=len(program)
                 return False
+            else:
+                print("checksum ok")
             so["keycode"]=KeyCode.name[secType]            
             so["Program"]=program
             so["Dummy"]=dummyData
