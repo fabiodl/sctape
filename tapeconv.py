@@ -109,7 +109,7 @@ def convert(filename,outputtype,opts):
     
     outfile=getOutname(filename,outputtype,opts)    
     if "no_overwrite" in opts and os.path.isfile(outfile):
-        print(outfile+" already exists.")
+        print(str(outfile)+" already exists.")
         return
 
     
@@ -175,7 +175,7 @@ def convert(filename,outputtype,opts):
     parent_dir = outfile.parent
     parent_dir.mkdir(parents=True, exist_ok=True)
 
-    writers[outputtype](outfile,d)    
+    writers[outputtype](str(outfile),d)    
 
 
 if __name__=="__main__":
