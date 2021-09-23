@@ -12,6 +12,10 @@ from section import parseBytesSections,printSummary,listContent,getSections
 from  util import removeExtension,rhoSweep
 import getopt
 from pathlib import Path
+import hashlib
+import json
+
+version="0.01"
 
 
 def audioToRemasteredBit(filename,levell,levelh,opts): #levels are referred to max value, lperiod in seconds
@@ -47,6 +51,9 @@ def tzxRemaster(filename,d):
     filename="R_"+removeExtension(filename)+".tzx"
     tzxparse.writeTzxFromBs(filename,bs)
 
+
+def printInfo(filename,d):
+    print("INFO",json.dumps(d["info"],sort_keys=True, indent=4))
     
 readers={
     "mp3":audioRead,
@@ -66,10 +73,20 @@ writers={
     "summary":lambda f,d: None,
     "tzx":tzxparse.writeTzx,
     "basic":basicparse.writeBasic,
-    "bin":basparse.writeBin
+    "bin":basparse.writeBin,
+    "info":printInfo
 }
 
 remrate=44100
+
+
+
+def getMd5(filename):
+    md5_hash = hashlib.md5()
+    md5_hash.update(open(filename, "rb").read())
+    return md5_hash.hexdigest()
+
+
 
 
 def addSuffix(filename,suff):
@@ -83,29 +100,26 @@ def getOutname(filename,outputtype,opts):
         suff=suffix[opts["remaster"]]
     else:
         suff=""
-    return removeExtension(filename)+suff+"."+outputtype
+    outPath=Path(removeExtension(filename)+suff+"."+outputtype)
+    if "outdir" in opts:
+        outPath=Path(opts["outdir"]).joinpath(outPath)
+    return outPath
 
 def convert(filename,outputtype,opts):
-    outfile=getOutname(filename,outputtype,opts)
-    if "no_overwrite" and os.path.isfile(outfile):
+    
+    outfile=getOutname(filename,outputtype,opts)    
+    if "no_overwrite" in opts and os.path.isfile(outfile):
         print(outfile+" already exists.")
-        return 
+        return
+
+    
     print("specified options",opts)
+
+
+
     ext=filename.split(".")[-1]
     print("Reading input")
     d=readers[ext](filename,opts)
-    print("Identifying bytes")
-    if "pitch" in opts:
-        pitch=float(opts["pitch"])
-    else:
-        pitch=1
-
-    getSections(d,pitch)
-    ignoreSectionErrors= "ignore_section_errors" in opts
-    print("Identifying sections")
-    parseBytesSections(d["sections"],not ignoreSectionErrors)
-    if outputtype!="list":
-        printSummary(d,False)
 
     if "remaster" in opts:
         remaster=opts["remaster"]
@@ -119,6 +133,36 @@ def convert(filename,outputtype,opts):
         else:
             remaster="signal"        
 
+
+
+    
+    info=d.setdefault("info",{})
+
+
+    info.setdefault("source",{
+        "filename":Path(filename).name,
+        "md5":getMd5(filename)
+    })    
+    tool=info.setdefault("tool",{})
+    tool["name"]="tapeconv"           
+    tool["version"]=version
+    tool["url"]="https://github.com/fabiodl/sctape"
+    tool.setdefault("settings",{})["remaster"]=remaster
+    
+    print("Identifying bytes")
+    if "pitch" in opts:
+        pitch=float(opts["pitch"])
+    else:
+        pitch=1
+
+    getSections(d,pitch)
+    ignoreSectionErrors= "ignore_section_errors" in opts
+    print("Identifying sections")
+    parseBytesSections(d["sections"],not ignoreSectionErrors)
+    if outputtype!="list":
+        printSummary(d,False)
+
+
     if remaster=="section":
         print("Remastering sections")
         d["bitrate"]=remrate
@@ -128,11 +172,14 @@ def convert(filename,outputtype,opts):
         d["bitrate"]=remrate
         d["signal"]=bitparse.genSignal(d,remrate,False)
     print("Writing output")
+    parent_dir = outfile.parent
+    parent_dir.mkdir(parents=True, exist_ok=True)
+
     writers[outputtype](outfile,d)    
 
 
 if __name__=="__main__":
-    options=["level=","pitch=","mode=","ignore_section_errors","remaster=","batch","no_overwrite"]
+    options=["level=","pitch=","mode=","ignore_section_errors","remaster=","batch","no_overwrite","outdir="]
     optlist,args=getopt.getopt(sys.argv[1:],"",options)
     if len(sys.argv)<2:
         print("Usage ",sys.argv[0]," inputfile outputtype")

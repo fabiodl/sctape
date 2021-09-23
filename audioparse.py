@@ -144,6 +144,16 @@ def getRawSection(filename,rhol,rhoh,opts):
         }
     else:
         raise Exception("Unkown mode",mode+" known modes are "+" ".join(["absolute","diff"]))
+
+    d["info"]={
+        "tool":{
+            "settings":{
+                "mode":mode,
+                "level":[rhol,rhoh]
+            }
+        }
+    }
+    
     return d
     
 

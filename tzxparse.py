@@ -1,5 +1,7 @@
 import numpy as np
 from itertools import chain
+import json
+
 def leint(x,n):
     l=[]
     for i in range(n):
@@ -7,6 +9,10 @@ def leint(x,n):
         x=x>>8
     return l
 
+class BlockType:
+    directRecording=0x15
+    info=0x35
+    glue=0x5A
 
 
 class Encoder:
@@ -72,6 +78,26 @@ def getFileHeader():
     data+=bytearray([0x1A,1,20])
     return data
 
+
+def encodeInfoblock(d):
+    data=bytearray()
+    if "info" not in d:
+        return data
+    data+=bytes([BlockType.info])
+    data+=f"{'conversion': <16}".encode()
+    info=json.dumps(d["info"])
+    data+=bytes(leint(len(info),4))
+    data+=info.encode()
+    return data
+
+
+def decodeInfoblock(b):
+    if b[:0x10].decode("UTF-8")==f"{'conversion': <16}":
+        print("found block")
+        return json.loads(b[0x14:])
+    print("not a conversion block")
+
+
 def encode(trate,d):
     #print("data len",len(d))
     enc=Encoder(trate)
@@ -102,13 +128,20 @@ def writeTzxFromBs(filename,bs):
 
 
 def writeTzx(filename,d):
-    resample=44100
-    trate=int(np.round(3.5E6/resample))
-    bitrate=d["bitrate"]
-    lsignal=len(d["signal"])
-    idx=[int(x) for x in np.clip(np.round(bitrate*np.arange(0,lsignal/bitrate,1/resample)),0,lsignal-1)]
+    if d["bitrate"]!=44100:
+
+        resample=44100
+        bitrate=d["bitrate"]
+        lsignal=len(d["signal"])
+        idx=[int(x) for x in np.clip(np.round(bitrate*np.arange(0,lsignal/bitrate,1/resample)),0,lsignal-1)]
+        signal=d["signal"][idx]
+    else:
+        signal=d["signal"]
+
+    trate=int(np.round(3.5E6/44100))
     data=getFileHeader()
-    data+=encode(trate,d["signal"][idx])
+    data+=encodeInfoblock(d)
+    data+=encode(trate,signal)
     with open(filename,"wb") as f:
         f.write(data)
 
@@ -129,12 +162,14 @@ def getBlocks(fname):
             begin=ptr
             bid=data[ptr]        
             ptr+=1
-            if bid==0x5A:
+            if bid==BlockType.glue:
                 ptr+=9
-            elif bid==0x15:
+            elif bid==BlockType.info:
+                ptr+=le(data[ptr+0x10:ptr+0x14])+0x14
+            elif bid==BlockType.directRecording:
                 ptr+=le(data[ptr+5:ptr+8])+8
             else:
-                raise Exception("Unknow block "+bid)
+                raise Exception(f"Unknow block {bid:02x}")
             blocks.append(data[begin:ptr])
     return blocks
 
@@ -151,16 +186,23 @@ tzxBet=np.array([tzxByteExpand(i) for i in range(256)])
 def readTzx(filename,opts=None):
     blocks=getBlocks(filename)
     d=np.zeros(0)
+    dic={}
     for bl in blocks:
-        if bl[0]==0x15:
+        if bl[0]==BlockType.directRecording:
             print("found block")
             conv=tzxBet[list(bl[9:])]    
             d=np.hstack([d,conv.reshape(-1)])
-    dic={
-        "signal":np.array(d),
-        "bitrate":44100 #FIX ME
-    }
-    print("signal shape",np.shape(dic["signal"]))
+        elif bl[0]==BlockType.info:
+            info=decodeInfoblock(bl[1:])
+            if info is not None:
+                dic["info"]={
+                    "parent":info
+                    }
+            
+    dic["signal"]=np.array(d)        
+    dic["bitrate"]=44100 #FIX ME
+
+    #print("signal shape",np.shape(dic["signal"]))
     return dic
         
 

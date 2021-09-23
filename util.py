@@ -24,12 +24,12 @@ def rhoSweep(func,filename,rho,lperiod):
             s=1.0/2**div
             for rho in np.arange(s,1,2*s):        
                 try:
-                    print(f"Level at {rho:0.2f}",end="\r")
+                    print(f"Level at {rho:0.2f}")
                     d=func(filename,rho,rho,lperiod)
                     print(f"\nOK for {rho:0.2f}")
                     return d
                 except Exception as e:
-                    print(f"Level at {rho:0.2f} failed:"+str(e),end="\r")
+                    print(f"Level at {rho:0.2f} failed:"+str(e))
                     print("")
                     # raise
         raise Exception("No level found")
