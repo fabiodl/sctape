@@ -13,7 +13,7 @@ conv={' ':Space,'0':Zero,'1':One}
 
 
 
-def writeWav(filename,data):
+def writeWavFromBs(filename,data):
     obj = wave.open(filename,'wb')
     obj.setnchannels(1) # mono
     obj.setsampwidth(2)
@@ -23,6 +23,18 @@ def writeWav(filename,data):
     obj.close()
 
 
+def writeWav(filename,d):
+    obj = wave.open(filename,'wb')
+    obj.setnchannels(1) # mono
+    obj.setsampwidth(2)
+    obj.setframerate(d["bitrate"])
+    for d in d["signal"]:
+       obj.writeframesraw( np.int16(val*d) )
+    obj.close()
+    
+    
+
+    
 
 def bittowav(filename):
     with open(filename) as f:

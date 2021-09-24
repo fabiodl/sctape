@@ -4,6 +4,28 @@ import numpy as np
 def bigEndian(x):
     return np.sum([v*(256**i) for i,v in enumerate(x[::-1])])
 
+def le(d):
+    return sum([c<<(8*i) for i,c in enumerate(d)])
+
+def leint(x,n):
+    l=[]
+    for i in range(n):
+        l.append(x&0xFF)
+        x=x>>8
+    return l
+
+
+def beint(x,n):
+    l=[]
+    for i in range(n):
+        l.append( (x>> ((n-1-i)*8))&0xFF   )
+    return l
+
+
+
+
+
+
 
 def printable(s):
     return "".join([c for c in s if c.isprintable()])

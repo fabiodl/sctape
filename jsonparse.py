@@ -7,7 +7,7 @@ def hexString(d):
 
 def elemSerialize(x):
     t=type(x)
-    print("type",t)
+    #print("type",t)
     if t in serializers:
         return serializers[t](x)
     return x

@@ -2,12 +2,8 @@ import numpy as np
 from itertools import chain
 import json
 
-def leint(x,n):
-    l=[]
-    for i in range(n):
-        l.append(x&0xFF)
-        x=x>>8
-    return l
+from util import le,leint
+
 
 class BlockType:
     directRecording=0x15
@@ -146,11 +142,7 @@ def writeTzx(filename,d):
         f.write(data)
 
 
-def le(x):
-    r=0
-    for i,v in enumerate(x):
-        r+=(256**i)*v
-    return r
+
         
 
 def getBlocks(fname):

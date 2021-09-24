@@ -14,6 +14,7 @@ import getopt
 from pathlib import Path
 import hashlib
 import json
+import traceback
 
 version="0.01"
 
@@ -41,15 +42,15 @@ def audioRead(filename,opts):
         return rhoSweep(audioToRemasteredBit,filename,"auto",opts)
 
 
-def wavRemaster(filename,d):
-    bs=bitparse.toBitRemaster(d)
-    filename="R_"+removeExtension(filename)+".wav"
-    wavparse.writeWav(filename,bs)
+# def wavRemaster(filename,d):
+#     bs=bitparse.toBitRemaster(d)
+#     filename="R_"+removeExtension(filename)+".wav"
+#     wavparse.writeWav(filename,bs)
 
-def tzxRemaster(filename,d):
-    bs=bitparse.toBitRemaster(d)
-    filename="R_"+removeExtension(filename)+".tzx"
-    tzxparse.writeTzxFromBs(filename,bs)
+# def tzxRemaster(filename,d):
+#     bs=bitparse.toBitRemaster(d)
+#     filename="R_"+removeExtension(filename)+".tzx"
+#     tzxparse.writeTzxFromBs(filename,bs)
 
 
 def printInfo(filename,d):
@@ -60,7 +61,9 @@ readers={
     "wav":audioRead,
     "bit":bitparse.getSections,
     "json":jsonparse.jsonDeserialize,
-    "tzx":tzxparse.readTzx
+    "tzx":tzxparse.readTzx,
+    "bas":basparse.readBas,
+    "basic":basicparse.readBasic
 }
 
 writers={
@@ -68,7 +71,7 @@ writers={
     "bit":lambda f,d: bitparse.writeBit(f,d,True),
     "rawbit":lambda f,d: bitparse.writeBit(f,d,False),
     "bas":basparse.writeBas,
-    "wav":wavRemaster,
+    "wav":wavparse.writeWav,
     "list":lambda f,d: print(f,listContent(d)),
     "summary":lambda f,d: None,
     "tzx":tzxparse.writeTzx,
@@ -95,44 +98,57 @@ def addSuffix(filename,suff):
 
 
 def getOutname(filename,outputtype,opts):
-    suffix={"section":"_rs","bit":"_rb"}
-    if "remaster" in opts:
-        suff=suffix[opts["remaster"]]
-    else:
-        suff=""
-    outPath=Path(removeExtension(filename)+suff+"."+outputtype)
-    if "outdir" in opts:
-        outPath=Path(opts["outdir"]).joinpath(outPath)
+    suffix={"none":"","signal":"","bit":"_rb","section":"_rs"}
+    
+    suff=suffix[opts["remaster"]]
+    if "output_filename" in opts:
+        outPath=Path(opts["output_filename"])
+    else:        
+        outPath=Path(removeExtension(filename)+suff+"."+outputtype)
+    if "output_dir" in opts:
+        outPath=Path(opts["output_dir"]).joinpath(outPath)
     return outPath
 
 def convert(filename,outputtype,opts):
+    if outputtype not in writers:
+        print("Unknow output type",outputtype)
+        print("Known types are",writers.keys())
+        raise Exception("Unknown output type ")
+
+    print("specified options",opts)
+    if "input_type" in opts:
+        inputtype=opts["input_type"]
+    else:
+        inputtype=filename.split(".")[-1]
+
     
+    if "remaster" not in opts or opts["remaster"]=="auto":
+        if inputtype in ["basic","bas"]:
+            remaster="section"
+        elif inputype in ["bit"]:
+            remaster="bit"
+        else:
+            remaster="signal"
+    else:
+         remaster=opts["remaster"]
+         remlevels=["none","auto","signal","bit","section"]
+         if remaster not in remlevels:
+             errmessage="Unknown remaster level "+remaster+"options are "+" ".join(remlevels)
+             raise Exception(errmessage)        
+
+    opts["remaster"]=remaster
     outfile=getOutname(filename,outputtype,opts)    
     if "no_overwrite" in opts and os.path.isfile(outfile):
         print(str(outfile)+" already exists.")
         return
 
     
-    print("specified options",opts)
 
 
+    
 
-    ext=filename.split(".")[-1]
     print("Reading input")
-    d=readers[ext](filename,opts)
-
-    if "remaster" in opts:
-        remaster=opts["remaster"]
-        remlevels=["signal","bit","section"]
-        if remaster not in remlevels:
-            errmessage="Unknown remaster level "+remaster+"options are "+" ".join(remlevels)
-            raise Exception(errmessage)        
-    else:
-        if "signal" not in d:
-            remaster="bit"
-        else:
-            remaster="signal"        
-
+    d=readers[inputtype](filename,opts)
 
 
     
@@ -171,15 +187,14 @@ def convert(filename,outputtype,opts):
         print("Remastering bits")
         d["bitrate"]=remrate
         d["signal"]=bitparse.genSignal(d,remrate,False)
-    print("Writing output")
+    print("Writing output",outfile)
     parent_dir = outfile.parent
-    parent_dir.mkdir(parents=True, exist_ok=True)
-
+    parent_dir.mkdir(parents=True, exist_ok=True)    
     writers[outputtype](str(outfile),d)    
 
 
 if __name__=="__main__":
-    options=["level=","pitch=","mode=","ignore_section_errors","remaster=","batch","no_overwrite","outdir="]
+    options=["level=","pitch=","mode=","ignore_section_errors","remaster=","batch","no_overwrite","output_dir=","output_filename=","program_name=","input_type="]
     optlist,args=getopt.getopt(sys.argv[1:],"",options)
     if len(sys.argv)<2:
         print("Usage ",sys.argv[0]," inputfile outputtype")
@@ -206,8 +221,10 @@ if __name__=="__main__":
                 convert(filename,args[1],opts)
                 ok.append(filename)
             except Exception as e:
-                print("Impossible to convert",filename,":",e)
+                print("Impossible to convert",filename,":",
+                ''.join(traceback.format_exception(None, e, e.__traceback__)))
                 bad.append(filename)
+            # raise
         if len(ok):
             print("Successfully converted ",ok)
         if len(bad):

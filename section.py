@@ -69,6 +69,8 @@ def parseBytes(si,so):
                 so["fail.checksum"]=checkSum
                 print("*checksum fail")
                 return False
+            else:
+                print("header checksum ok")
             so["keycode"]=KeyCode.name[secType]            
             so["Filename"]="".join([chr(c) for c in filename])
             so["ProgramLength"]=bigEndian(programLength)
@@ -106,6 +108,7 @@ def parseBytes(si,so):
                 print("checksum ok")
             so["keycode"]=KeyCode.name[secType]            
             so["Program"]=program
+            so["Patity"]=parity
             so["Dummy"]=dummyData
             so["length"]=len(program)
     else:
@@ -122,6 +125,7 @@ def parseBytesSections(sl,exceptOnError):
                 error=True
 
     if error:
+        print(s)
         print("Section errors, decoded",len(sl),"sections")
         if len(sl)<10:
             for sec in sl:

@@ -12,13 +12,13 @@ def plotAudio(fname):
     y=signal.resample(y,int(np.ceil(len(y)*hs/fr)))
     y=y/np.max(np.abs(y))
     print("audio",len(y),"samples fr=",fr)
-    plt.plot(y)
+    plt.plot(y,label="audio")
 
 
 def plotTzx(fname):
     y=readTzx(fname)["signal"]
     print("tzx",len(y),"samples")
-    plt.plot(y)
+    plt.plot(y,label="tzx")
 
     
 if __name__=="__main__":
@@ -28,5 +28,5 @@ if __name__=="__main__":
 
     if len(sys.argv)>2:
         plotTzx(sys.argv[2])
-
+    plt.legend()
     plt.show()
