@@ -88,10 +88,12 @@ def encodeInfoblock(d):
 
 
 def decodeInfoblock(b):
-    if b[:0x10].decode("UTF-8")==f"{'conversion': <16}":
+    knownInfos=[f"{'conversion': <16}",f"{'recording': <16}"]
+    iid=b[:0x10].decode("UTF-8")
+    if iid in knownInfos:
         print("found block")
         return json.loads(b[0x14:])
-    print("not a conversion block")
+    print("not a conversion block",iid)
 
 
 def encode(trate,d):
