@@ -125,7 +125,7 @@ def convert(filename,outputtype,opts):
     if "remaster" not in opts or opts["remaster"]=="auto":
         if inputtype in ["basic","bas"]:
             remaster="section"
-        elif inputype in ["bit"]:
+        elif inputtype in ["bit"]:
             remaster="bit"
         else:
             remaster="signal"
