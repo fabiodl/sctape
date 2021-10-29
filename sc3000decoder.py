@@ -66,6 +66,7 @@ def decode_command(command):
     result = ""
     zipper = zip(command[0::2], command[1::2])
     ascii_mode = False
+    inside_quote = False
 
     for i,j in zipper:
         current_result = ""
@@ -80,8 +81,11 @@ def decode_command(command):
             except KeyError: raise UnknownCommandException("Unknown command {}".format(i+j))
 
         # Characters between Double quote, or after DATA or REM, should be treated as ascii
-        if current_result in ['"',"DATA","REM"]:
+        if current_result in ["DATA","REM"]:
             ascii_mode = not ascii_mode
+        elif current_result == '"':
+            ascii_mode = not inside_quote
+            inside_quote = not inside_quote
 
         result += current_result
 
