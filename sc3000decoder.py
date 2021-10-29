@@ -65,12 +65,12 @@ def decode_one_line(line, suppress_error=False):
 def decode_command(command):
     result = ""
     zipper = zip(command[0::2], command[1::2])
-    ascii_mode = False
+    force_ascii = False
     inside_quote = False
 
-    for i,j in zipper:
+    for l, (i,j) in enumerate(zipper):
         current_result = ""
-        if i+j < "80" or ascii_mode:
+        if i+j < "80" or force_ascii or inside_quote:
             current_result = decode_ascii(i+j)
         elif i+j == "80":
             i,j = next(zipper)
@@ -82,9 +82,10 @@ def decode_command(command):
 
         # Characters between Double quote, or after DATA or REM, should be treated as ascii
         if current_result in ["DATA","REM"]:
-            ascii_mode = not ascii_mode
-        elif current_result == '"':
-            ascii_mode = not inside_quote
+            # Ignore the rest of the line
+            # https://www.c64-wiki.com/wiki/REM
+            force_ascii = True
+        if current_result == '"':
             inside_quote = not inside_quote
 
         result += current_result
