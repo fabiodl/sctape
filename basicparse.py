@@ -36,5 +36,5 @@ def readBasic(filename,opts):
             
 def decode( fname,chunk):
     hex_string = bytes(chunk).hex().upper()
-    decoded = decode_hex_string(hex_string, suppress_error=False)
+    decoded = decode_hex_string(hex_string, suppress_error=True)
     save_decoded_to(fname, decoded)
