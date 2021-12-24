@@ -8,8 +8,6 @@ http://www43.tok2.com/home/cmpslv/Sc3000/EnrSCbas.htm
 
 from command_table import COMMAND, FUNCTION
 
-END_LOOP_I = 1000000000
-
 class UnknownFunctionException(Exception):
     pass
 
@@ -31,7 +29,7 @@ def print_decoded(decoded, pretty_format = True):
     for line in decoded["result"]:
         print(print_format.format(line["byte"], line["line"], line["cmd"]))
 
-def decode_hex_string(hex_string, suppress_error=False):
+def decode_hex_string(hex_string, suppress_error=True):
     result = {"raw":hex_string, "result":[]}
     i = 0
     MIN_COMMAND_LENGTH = 14
@@ -41,28 +39,28 @@ def decode_hex_string(hex_string, suppress_error=False):
             result_i["cmd"] = "End of script, remaining hex is {}".format(hex_string[i:])
             di = len(hex_string) - i
         else:
-            di, result_i["line"], result_i["cmd"] = decode_one_line(hex_string[i:], suppress_error)
+            try:
+                di, result_i["line"], result_i["cmd"] = decode_one_line(hex_string[i:], suppress_error)
+            except UnknownFunctionException as e:
+                print("Error: {}".format(e))
+                break
+            except UnknownCommandException as e:
+                print("Error: {}".format(e))
+                break
         i += di
         result["result"].append(result_i)
     return result
 
-def decode_one_line(line, suppress_error=False):
+def decode_one_line(line, suppress_error=True):
     result = ""
     command_length = int(line[0:2],16)
     di = 10+command_length*2+2
     line_number =  int(line[4:6]+line[2:4],16)
     blank = line[6:10]
-    try:
-        result = decode_command(line[10:di-2])
-    except (UnknownFunctionException, UnknownCommandException) as e:
-        result = "Error in decoding: {} -- {}".format(e, line[:di-2])
-        di = di if suppress_error else END_LOOP_I
-    except Exception as e:
-        result = "Unknown error while decoding {} -- {}".format(e, line[:di-2])
-        di = di if suppress_error else END_LOOP_I
+    result = decode_command(line[10:di-2], line_number, suppress_error)
     return di, line_number, result
 
-def decode_command(command):
+def decode_command(command, line_number, suppress_error=True):
     result = ""
     zipper = zip(command[0::2], command[1::2])
     force_ascii = False
@@ -75,10 +73,22 @@ def decode_command(command):
         elif i+j == "80":
             i,j = next(zipper)
             try: current_result = FUNCTION[i+j]
-            except KeyError: raise UnknownFunctionException("Unknown function {}".format(i+j))
+            except KeyError:
+                msg = "Unknown Function {}{} on line {}".format(i,j,line_number)
+                if suppress_error:
+                    current_result = "\\f{}{}".format(i,j)
+                    print("Warning: " + msg)
+                else:
+                    raise UnknownFunctionException(msg)
         else:
             try: current_result = COMMAND[i+j]
-            except KeyError: raise UnknownCommandException("Unknown command {}".format(i+j))
+            except KeyError:
+                msg = "Unknown Command {}{} on line {}".format(i,j,line_number)
+                if suppress_error:
+                    current_result = "\\c{}{}".format(i,j)
+                    print("Warning: " + msg)
+                else:
+                    raise UnknownCommandException(msg)
 
         # Characters between Double quote, or after DATA or REM, should be treated as ascii
         if current_result in ["DATA","REM"]:
