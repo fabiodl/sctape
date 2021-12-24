@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import glob
 import sys
 import os
@@ -194,7 +196,7 @@ def convert(filename,outputtype,opts):
 
 
 if __name__=="__main__":
-    options=["level=","pitch=","mode=","ignore_section_errors","remaster=","batch","no_overwrite","output_dir=","output_filename=","program_name=","input_type="]
+    options=["level=","pitch=","mode=","ignore_section_errors","remaster=","batch","no_overwrite","output_dir=","output_filename=","input_type=","program_name=","program_type=","program_start_addr=","program_from=","program_to=","program_size="]
     optlist,args=getopt.getopt(sys.argv[1:],"",options)
     if len(sys.argv)<2:
         print("Usage ",sys.argv[0]," inputfile outputtype")

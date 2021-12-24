@@ -39,20 +39,51 @@ def getBasicSections(program,opts):
         "sections":[]
     }
     sections=d["sections"]
+
+    if "program_type" in opts:
+        ptype=opts["program_type"]
+        if ptype=="machine":
+            isMachine=True
+        elif ptype=="basic":
+            isMachine=False
+        else:
+            raise Exception("Unknown code type "+ctype+" options are either 'basic' or 'machine'")
+    else:
+        isMachine=False
+
+
+    if isMachine:
+        if "program_start_addr" in opts:
+            startAddr=int(opts["program_start_addr"],16)
+        else:
+            print("\nWarning: start address not specified\n")
+            startAddr=0xC000
+        
+        
     if "program_name" not in opts:
         print("\nWarning: program name not specified\n")
     else:
-        header=[KeyCode.BasicHeader]
+        if isMachine:
+            header=[KeyCode.MachineHeader]
+        else:
+            header=[KeyCode.BasicHeader]
         filename=opts["program_name"].ljust(16)[:16]
         filename=[ord(c) for c in filename]
         programLength=beint(len(program),2)
-        p=parity(filename+programLength)
+
+        headerPayload=filename+programLength
+        if isMachine:
+            headerPayload+=beint(startAddr,2)        
+        p=parity(headerPayload)
         sections.append({
             "t":-1,
             "type":"bytes",
-            "bytes": header+filename+programLength+[p,0x00,0x00]})
+            "bytes": header+headerPayload+[p,0x00,0x00]})
     
-    header=[KeyCode.BasicData]
+    if isMachine:
+        header=[KeyCode.MachineData]
+    else:
+        header=[KeyCode.BasicData]
     p=parity(program)
 
     sections.append({
@@ -64,7 +95,16 @@ def getBasicSections(program,opts):
         
     
 def readBas(filename,opts):
-    program=list(open(filename,"rb").read())
+    start,end=0,None
+    if "program_from" in opts:
+        start=int(opts["program_from"],16)
+    if "program_to" in opts:
+        end=int(opts["program_to"],16)
+    if "program_size" in opts:
+        end=start+int(opts["program_size"],16)
+
+        
+    program=list(open(filename,"rb").read()[start:end])
     return getBasicSections(program,opts)
 
     
