@@ -96,15 +96,20 @@ def getBasicSections(program,opts):
     
 def readBas(filename,opts):
     start,end=0,None
+    d=open(filename,"rb").read()
     if "program_from" in opts:
         start=int(opts["program_from"],16)
     if "program_to" in opts:
         end=int(opts["program_to"],16)
     if "program_size" in opts:
         end=start+int(opts["program_size"],16)
-
-        
-    program=list(open(filename,"rb").read()[start:end])
+    if "program_rstrip" in opts:
+        endchar=int(opts["program_rstrip"],16)
+        d=d.rstrip(bytes([endchar]))
+    if end is None:
+        end=len(d)
+    print(f"Reading {filename} range {start:04x} : {end:04x}")
+    program=list(d[start:end])
     return getBasicSections(program,opts)
 
     
