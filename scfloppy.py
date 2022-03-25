@@ -5,6 +5,7 @@ import os
 import pathlib
 import getopt
 from inspect import signature
+import math
 
 TRACKS=40
 SECTORSIZE=256
@@ -126,9 +127,9 @@ class Floppy:
         start=cluster*SECTORSPERCLUSTER*SECTORSIZE
         self.data[start:start+len(data)]=data
         fs=(FATTRACK*SECTORSPERTRACK+FATSECTOR)*SECTORSIZE
-        csize=int(len(data)/ (SECTORSPERCLUSTER*SECTORSIZE) )
+        csize=math.ceil(len(data)/ (SECTORSPERCLUSTER*SECTORSIZE) )
         self.data[fs+cluster:fs+cluster+csize]=bytes([0xFE]*csize)
-        print("System",csize,"sectors")
+        print("adding system data,",len(data),"bytes", "using",csize,"clusters from cluster",cluster)
         
     def getFile(self,name):
         start,_=self.files[name]
@@ -281,8 +282,9 @@ def pack(f,dirname):
             d=open(os.path.join(dirname,fname),"rb").read()
             f.addFile(fname,d)
 
-
-
+def setSystem(f,fname):
+    d=open(fname,"rb").read()
+    f.addSystem(0,d)
             
 
 commands={
@@ -294,6 +296,7 @@ commands={
     "format":lambda f: f.format(),
     "list":lambda f : f.printSummary(),
     "listfat":lambda f : f.printFat(),
+    "setSystem":setSystem
 }
 
             
