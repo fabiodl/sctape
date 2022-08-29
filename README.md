@@ -14,22 +14,22 @@ python3 tapeconv.py "*.ext" output
 
 ## Examples
 
-All wave files  to remastered bit
+All wave files to remastered tzx
 
 ```bash
-python3 tapeconv.py "*.wav" bit
+python3 tapeconv.py "*.wav" tzx
 ```
 
-All bit files to .bas
+All tzx files to .bas
 
 ```bash
-python3 tapeconv.py "*.bit" bas
+python3 tapeconv.py "*.tzx" bas
 ```
 
-All bit files to remastered wav
+All tzx files to remastered wav
 
 ```bash
-python3 tapeconv.py "*.bit" wav
+python3 tapeconv.py "*.tzx" wav
 ```
 
 ### Floppy
