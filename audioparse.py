@@ -26,6 +26,12 @@ def getAbsolute(data,levell,levelh):
     return np.where(data>levelh,1,np.where(data<levell,-1,0))   
 
 
+def getSlope(rate,y,level):
+    sos = signal.butter(10,rate*0.5*level, 'lowpass', fs=rate, output='sos')
+    filtered = signal.sosfilt(sos, y)
+    slope=np.where(np.diff(filtered)>0,-1,1)
+    slope=np.where(np.diff(filtered)>0,-1,1)
+    return slope
 
 hs=44100 # resample sample rate
 
@@ -87,6 +93,9 @@ def diffBinarize(dr,levell,levelh):
     return s
 
 
+
+
+
 class Cache:
     def __init__(self):
         self.name=None
@@ -142,8 +151,12 @@ def getRawSection(filename,rhol,rhoh,opts):
             "bitrate":44100,
             "signal":getResampled(data,rhol,rhoh,bitrate)
         }
+    elif mode=="slope":
+        d={"bitrate":bitrate,
+           "signal":getSlope(bitrate,data,rhoh)
+        }
     else:
-        raise Exception("Unkown mode",mode+" known modes are "+" ".join(["absolute","diff"]))
+        raise Exception("Unkown mode",mode+" known modes are "+" ".join(["absolute","diff","slope"]))
 
     d["info"]={
         "tool":{
