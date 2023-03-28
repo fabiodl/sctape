@@ -32,7 +32,7 @@ def audioToRemasteredBit(filename, levell, levelh, opts):
     if len([s for s in d["sections"] if s["type"] == "bytes"]) < 2:
         raise Exception("nothing to parse")
 
-    parseBytesSections(d["sections"], True)
+    parseBytesSections(d["sections"], True, "ignore_ff_sections" in opts)
     return d
 
 
@@ -168,8 +168,11 @@ def convert(filename, outputtype, opts):
 
     getSections(d, pitch)
     ignoreSectionErrors = "ignore_section_errors" in opts
+    ignoreFFsections="ignore_ff_sections" in opts
     print("Identifying sections")
-    parseBytesSections(d["sections"], not ignoreSectionErrors)
+    parseBytesSections(d["sections"], not ignoreSectionErrors,
+                       ignoreFFsections
+                       )
     if outputtype != "list":
         printSummary(d, False)
 
@@ -189,7 +192,7 @@ def convert(filename, outputtype, opts):
 
 
 if __name__ == "__main__":
-    options = ["level=", "pitch=", "mode=", "ignore_section_errors", "remaster=", "batch", "no_overwrite", "output_dir=", "output_filename=",
+    options = ["level=", "pitch=", "mode=", "ignore_section_errors", "ignore_ff_sections","remaster=", "batch", "no_overwrite", "output_dir=", "output_filename=",
                "input_type=", "program_name=", "program_type=", "program_start_addr=", "program_from=", "program_to=", "program_size=", "program_rstrip="]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:

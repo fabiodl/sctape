@@ -119,12 +119,16 @@ def parseBytes(si, so):
     return True
 
 
-def parseBytesSections(sl, exceptOnError):
+def parseBytesSections(sl, exceptOnError,ignoreFFsections):
     error = False
     for s in sl:
         if s["type"] == "bytes":
-            if not parseBytes(s, s):
-                error = True
+            if ignoreFFsections and s["bytes"][0]==0xFF:
+                s["type"]="ignored_section"
+                print("ignoring section of length",len(s["bytes"]))
+            else:
+                if not parseBytes(s, s):
+                    error = True
 
     if error:
         print(s)
