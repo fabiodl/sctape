@@ -246,21 +246,21 @@ class Floppy:
             for c in chain:
                 chains[c]=idx+1
 
-        def clusterState(t,c):            
+        def clusterState(t,c):
             idx=t*CLUSTERSPERTRACK+c
             s=f"[{idx:02x}]{fat[idx]:02x}"
-            if chains[t*CLUSTERSPERTRACK+c]>=0:                
+            if chains[t*CLUSTERSPERTRACK+c]>=0:
                 s+=f"({chains[idx]:02d})"
             else:
                s+=" "*4
             return s
 
-                
-        for t in range(TRACKS):        
+
+        for t in range(TRACKS):
             status=" ".join([f"{clusterState(t,c)}" for c in range(CLUSTERSPERTRACK)])
             print(f"{t:2d}",status)
 
-        
+
 def canonicalName(name):
     if "." in name:
         tok=name.split(".")
@@ -269,7 +269,7 @@ def canonicalName(name):
         name=n[:8].ljust(8)+"."+e
     return name
 
-                  
+
 
 def extract(f,dirname):
     pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
@@ -277,19 +277,19 @@ def extract(f,dirname):
         with open(os.path.join(dirname,fname),"wb") as of:
             of.write(f.getFile(fname))
 
-    for c,d in f.getSystem():        
+    for c,d in f.getSystem():
         with open(os.path.join(dirname,f"IPL{c}"),"wb") as of:
             of.write(d)
-    
 
 
-            
+
+
 def pack(f,dirname):
-    for fname in os.listdir(dirname):        
+    for fname in sorted(os.listdir(dirname)):
         if fname[:3]=="IPL":
             d=open(os.path.join(dirname,fname),"rb").read()
             f.addSystem(int(fname[3:]),d)
-    for fname in os.listdir(dirname):        
+    for fname in sorted(os.listdir(dirname)):
         if fname[:3]!="IPL":
             d=open(os.path.join(dirname,fname),"rb").read()
             f.addFile(fname,d)
@@ -297,7 +297,7 @@ def pack(f,dirname):
 def setSystem(f,fname):
     d=open(fname,"rb").read()
     f.addSystem(0,d)
-            
+
 
 commands={
     "help":lambda f: print("Available commands "+" ".join(getLongOptions())),
@@ -311,10 +311,10 @@ commands={
     "setSystem":setSystem
 }
 
-            
+
 def getLongOptions():
-    return [c+"=" if len(signature(f).parameters)>1 else c for (c,f) in commands.items()]        
-            
+    return [c+"=" if len(signature(f).parameters)>1 else c for (c,f) in commands.items()]
+
 
 if __name__=="__main__":
 
@@ -323,12 +323,10 @@ if __name__=="__main__":
     else:
 
         optlist,_=getopt.getopt(sys.argv[1:],"",getLongOptions())
-        f=Floppy()        
+        f=Floppy()
         for (c,opt) in optlist:
             func=commands[c[2:]]
             if len(opt)>0:
                 func(f,opt)
             else:
                 func(f)
-
-        

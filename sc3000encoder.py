@@ -17,11 +17,17 @@ def encode_script_string(script_string, suppress_error = False):
     return result
 
 def encode_one_line(line):
-    line_number, command = line.split(" ",1)
-    encoded_line_number = encode_line_number(line_number)
-    encoded_command = encode_command(command)
-    encoded_command_length = encode_command_length(encoded_command)
-    return (encoded_command_length + encoded_line_number + "0000" + encoded_command + "0D").upper()
+    try:
+        line_number, command = line.split(" ",1)
+        encoded_line_number = encode_line_number(line_number)
+        encoded_command = encode_command(command)
+        encoded_command_length = encode_command_length(encoded_command)
+        encoded=(encoded_command_length + encoded_line_number + "0000" + encoded_command + "0D").upper()
+        return encoded
+
+    except Exception as e:
+        print("unable to convert LINE",line)
+        raise e
 
 def encode_line_number(line_number):
     hex_number = f"{int(line_number):04x}"
@@ -30,6 +36,8 @@ def encode_line_number(line_number):
 def encode_command(command):
     result = ""
     ascii_mode = False
+    in_comment=False
+    in_quotes=False
     c = 0
     while c < len(command):
         parsed = ""
@@ -37,8 +45,11 @@ def encode_command(command):
             result_c, parsed, dc = match_one_keyword(command[c:])
         if ascii_mode or not parsed:
             result_c, parsed, dc = encode_one_ascii(command[c:])
-        if parsed in ['"','REM','DATA']:
-            ascii_mode = not ascii_mode
+        if parsed=='"':
+            in_quotes = not in_quotes
+        elif parsed in ['REM','DATA']:
+            in_comment=True
+        ascii_mode= in_comment or in_quotes
         c += dc
         result += result_c
     return result
