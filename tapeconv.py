@@ -96,17 +96,44 @@ def getMd5(filename):
 
 def addSuffix(filename, suff):
     tok = filename.split(".")
-    return ".".join(tok[:-1])+suff+"."+tok[-1]
+    return ".".join(tok[:-1]) + suff + "." + tok[-1]
 
 
-def getOutname(filename, outputtype, opts):
+def to83name(filename, outputtype):
+    if len(filename) > 8:
+
+        def charSet(s, e):
+            return [chr(x) for x in range(ord(s), ord(e) + 1)]
+
+        cs = charSet("0", "9") + charSet("a", "z") + charSet("A", "Z")
+        sf = ""
+        for ch in filename:
+            if ch in cs:
+                sf += ch
+        filename = sf
+
+    filename = filename[:8].ljust(8, " ").upper()
+    extension = outputtype[:3].ljust(3, " ").upper()
+    return filename + "." + extension
+
+
+def getOutname(filename, outputtype, opts, d):
+
+    if "output_filename_from_content" in opts:
+        if "sections" in d:
+            for sec in d["sections"]:
+                if "Filename" in sec:
+                    filename = sec["Filename"]
+
     suffix = {"none": "", "signal": "", "bit": "_rb", "section": "_rs"}
 
     suff = suffix[opts["remaster"]]
     if "output_filename" in opts:
         outPath = Path(opts["output_filename"])
+    elif "output_filename_8.3" in opts:
+        outPath = Path(to83name(filename, outputtype))
     else:
-        outPath = Path(removeExtension(filename)+suff+"."+outputtype)
+        outPath = Path(removeExtension(filename) + suff + "." + outputtype)
     if "output_dir" in opts:
         outPath = Path(opts["output_dir"]).joinpath(outPath)
     return outPath
@@ -140,10 +167,11 @@ def convert(filename, outputtype, opts):
             raise Exception(errmessage)
 
     opts["remaster"] = remaster
-    outfile = getOutname(filename, outputtype, opts)
-    if "no_overwrite" in opts and os.path.isfile(outfile):
-        print(str(outfile)+" already exists.")
-        return
+    if "output_filename_from_content" not in opts:
+        outfile = getOutname(filename, outputtype, opts, None)
+        if "no_overwrite" in opts and os.path.isfile(outfile):
+            print(str(outfile) + " already exists.")
+            return
 
     print("Reading input")
     d = readers[inputtype](filename, opts)
@@ -168,11 +196,10 @@ def convert(filename, outputtype, opts):
 
     getSections(d, pitch)
     ignoreSectionErrors = "ignore_section_errors" in opts
-    ignoreFFsections="ignore_ff_sections" in opts
+    ignoreFFsections = "ignore_ff_sections" in opts
     print("Identifying sections")
     parseBytesSections(d["sections"], not ignoreSectionErrors,
-                       ignoreFFsections
-                       )
+                       ignoreFFsections)
     if outputtype != "list":
         printSummary(d, False)
 
@@ -185,6 +212,8 @@ def convert(filename, outputtype, opts):
         print("Remastering bits")
         d["bitrate"] = remrate
         d["signal"] = bitparse.genSignal(d, remrate, False)
+    if "output_filename_from_content" in opts:
+        outfile = getOutname(filename, outputtype, opts, d)
     print("Writing output", outfile)
     parent_dir = outfile.parent
     parent_dir.mkdir(parents=True, exist_ok=True)
@@ -192,8 +221,14 @@ def convert(filename, outputtype, opts):
 
 
 if __name__ == "__main__":
-    options = ["level=", "pitch=", "mode=", "ignore_section_errors", "ignore_ff_sections","remaster=", "batch", "no_overwrite", "output_dir=", "output_filename=",
-               "input_type=", "program_name=", "program_type=", "program_start_addr=", "program_from=", "program_to=", "program_size=", "program_rstrip="]
+    options = [
+        "level=", "pitch=", "mode=", "ignore_section_errors",
+        "ignore_ff_sections", "remaster=", "batch", "no_overwrite",
+        "output_dir=", "output_filename=", "output_filename_from_content",
+        "output_filename_8.3", "input_type=", "program_name=", "program_type=",
+        "program_start_addr=", "program_from=", "program_to=", "program_size=",
+        "program_rstrip="
+    ]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:
         print("Usage ", sys.argv[0], " inputfile outputtype")
@@ -210,7 +245,7 @@ if __name__ == "__main__":
                 files = sorted(glob.glob(args[0]))
 
             if len(args) >= 1 and len(files) == 0:
-                print(f"No such input file[s]: '{args[0]}'",)
+                print(f"No such input file[s]: '{args[0]}'", )
         ok = []
         bad = []
         for filename in files:
@@ -220,8 +255,9 @@ if __name__ == "__main__":
                 convert(filename, args[1], opts)
                 ok.append(filename)
             except Exception as e:
-                print("Impossible to convert", filename, ":",
-                      ''.join(traceback.format_exception(None, e, e.__traceback__)))
+                print(
+                    "Impossible to convert", filename, ":", ''.join(
+                        traceback.format_exception(None, e, e.__traceback__)))
                 bad.append(filename)
             # raise
         if len(ok):

@@ -7,15 +7,15 @@ def writeFile(filename,l):
         f.write(bytes(l))
 
 def writeBas(filename,d): #already parsed    
-    fname=removeExtension(filename)
     codeChunks=[]
     for s in d["sections"]:
         if s["type"]=="bytes" and KeyCode.code[s["keycode"]]==KeyCode.BasicData:
             codeChunks.append(s["Program"])
 
     if len(codeChunks)==1:        
-        writeFile(fname+".bas",codeChunks[0])
+        writeFile(filename,codeChunks[0])
     else:
+        fname=removeExtension(filename)
         for idx,c in enumerate(codeChunks):
             writeFile(f"{fname}{idx}.bas",c)
 
