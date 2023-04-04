@@ -70,7 +70,8 @@ def parseBytes(si, so):
                 print("*checksum fail")
                 return False
             else:
-                print(f"header checksum ok, prog len {bigEndian(programLength)}")
+                print(
+                    f"header checksum ok, prog len {bigEndian(programLength)}")
             so["keycode"] = KeyCode.name[secType]
             so["Filename"] = "".join([chr(c) for c in filename])
             so["ProgramLength"] = bigEndian(programLength)

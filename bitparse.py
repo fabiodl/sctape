@@ -67,6 +67,7 @@ def toBitRemaster(d, fastStart=True):
     data = ""
     for s in d["sections"]:
         stype = s["type"]
+        print("section", s)
         if stype == "bytes":
             code = KeyCode.code[s["keycode"]]
             if fastStart:

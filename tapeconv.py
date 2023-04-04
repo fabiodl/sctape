@@ -11,7 +11,7 @@ import wavparse
 import tzxparse
 import basicparse
 from section import parseBytesSections, printSummary, listContent, getSections, getBitSequence
-from util import removeExtension, rhoSweep
+from util import removeExtension, rhoSweep, rhoSweepMax
 import getopt
 from pathlib import Path
 import hashlib
@@ -33,14 +33,32 @@ def audioToRemasteredBit(filename, levell, levelh, opts):
         raise Exception("nothing to parse")
 
     parseBytesSections(d["sections"], True, "ignore_ff_sections" in opts)
+    if len([s for s in d["sections"] if s["type"] == "bytes"]) < 1:
+        raise Exception("no meaningful bytes")
     return d
+
+
+def audioFindBytes(filename, levell, levelh, opts):
+    d = audioparse.getRawSection(filename, levell, levelh, opts)
+    if "pitch" in opts:
+        pitch = float(opts["pitch"])
+    else:
+        pitch = 1
+    d = getSections(d, pitch)
+    score = 11*len([s for s in d["sections"] if s["type"] == "bytes"]) / \
+        len([s for s in d["sections"] if s["type"] == "level"])
+    return score, d
 
 
 def audioRead(filename, opts):
     if "level" in opts:
-        lev = float(opts["level"])
-        d = audioparse.getRawSection(filename, lev, lev, opts)
-        return d
+        if opts["level"] == "best":
+            return rhoSweepMax(audioFindBytes, filename, opts)
+        else:
+            lev = float(opts["level"])
+            d = audioparse.getRawSection(filename, lev, lev, opts)
+            return d
+
     else:
         return rhoSweep(audioToRemasteredBit, filename, "auto", opts)
 
@@ -227,7 +245,7 @@ if __name__ == "__main__":
         "output_dir=", "output_filename=", "output_filename_from_content",
         "output_filename_8.3", "input_type=", "program_name=", "program_type=",
         "program_start_addr=", "program_from=", "program_to=", "program_size=",
-        "program_rstrip="
+        "program_rstrip=", "search_precision="
     ]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:

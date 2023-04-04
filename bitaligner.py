@@ -1,4 +1,5 @@
-import sys
+#! /usr/bin/env python3
+import argparse
 
 
 def isByte(x):
@@ -40,9 +41,12 @@ def writeSplit(data, outfname):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print(f"Usage {argv[0]} inputfile outputfile")
-    else:
-        with open(sys.argv[1]) as f:
-            data = f.read()
-            writeSplit(data, sys.argv[2])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("inputfile")
+    parser.add_argument("outputfile")
+
+    args = parser.parse_args()
+
+    with open(args.inputfile) as f:
+        data = f.read()
+        writeSplit(data, args.outputfile)
