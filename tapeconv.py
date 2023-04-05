@@ -10,7 +10,9 @@ import basparse
 import wavparse
 import tzxparse
 import basicparse
-from section import parseBytesSections, printSummary, listContent, getSections, getBitSequence
+import seqparse
+from section import parseBytesSections, printSummary, listContent, getSections
+
 from util import removeExtension, rhoSweep, rhoSweepMax
 import getopt
 from pathlib import Path
@@ -81,11 +83,13 @@ def printInfo(filename, d):
 readers = {
     "mp3": audioRead,
     "wav": audioRead,
-    "bit": bitparse.getSections,
+    "bit": bitparse.readBit,
     "json": jsonparse.jsonDeserialize,
     "tzx": tzxparse.readTzx,
     "bas": basparse.readBas,
     "basic": basicparse.readBasic,
+    "bitseq": seqparse.readByteSeq,
+    "byteseq": seqparse.readByteSeq
 }
 
 writers = {
@@ -100,7 +104,8 @@ writers = {
     "basic": basicparse.writeBasic,
     "bin": basparse.writeBin,
     "info": printInfo,
-    "bitseq": getBitSequence  # to be used with bitaligner and bitcompose
+    "bitseq": seqparse.writeBitSequence,
+    "byteseq": seqparse.writeByteSequence
 }
 
 remrate = 44100
@@ -172,7 +177,7 @@ def convert(filename, outputtype, opts):
     if "remaster" not in opts or opts["remaster"] == "auto":
         if inputtype in ["basic", "bas"]:
             remaster = "section"
-        elif inputtype in ["bit"]:
+        elif inputtype in ["bit", "bitseq", "byteseq"]:
             remaster = "bit"
         else:
             remaster = "signal"

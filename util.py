@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import itertools
 
 
 def bigEndian(x):
@@ -23,6 +24,13 @@ def beint(x, n):
     for i in range(n):
         l.append((x >> ((n-1-i)*8)) & 0xFF)
     return l
+
+# https://stackoverflow.com/questions/1066758/find-length-of-sequences-of-identical-values-in-a-numpy-array-run-length-encodi/32681075
+
+
+def lre(bits):
+    for bit, group in itertools.groupby(bits):
+        yield (bit, len(list(group)))
 
 
 def printable(s):

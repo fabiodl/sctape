@@ -1,6 +1,5 @@
-from util import bigEndian, printable
+from util import bigEndian, printable, lre
 import numpy as np
-import itertools
 
 
 class KeyCode:
@@ -120,13 +119,13 @@ def parseBytes(si, so):
     return True
 
 
-def parseBytesSections(sl, exceptOnError,ignoreFFsections):
+def parseBytesSections(sl, exceptOnError, ignoreFFsections):
     error = False
     for s in sl:
         if s["type"] == "bytes":
-            if ignoreFFsections and s["bytes"][0]==0xFF:
-                s["type"]="ignored_section"
-                print("ignoring section of length",len(s["bytes"]))
+            if ignoreFFsections and s["bytes"][0] == 0xFF:
+                s["type"] = "ignored_section"
+                print("ignoring section of length", len(s["bytes"]))
             else:
                 if not parseBytes(s, s):
                     error = True
@@ -170,13 +169,6 @@ def listContent(d):
             if c in [KeyCode.BasicHeader, KeyCode.MachineHeader]:
                 filenames.append(s["Filename"])
     return filenames
-
-# https://stackoverflow.com/questions/1066758/find-length-of-sequences-of-identical-values-in-a-numpy-array-run-length-encodi/32681075
-
-
-def lre(bits):
-    for bit, group in itertools.groupby(bits):
-        yield (bit, len(list(group)))
 
 
 def getStarts(pairs):
@@ -244,32 +236,6 @@ def maybeByte(pairs, period, firstByte):
     return offset, n
 
 
-def getBitSequence(fname, d):
-    if "signal" not in d:
-        print("No signal analysis")
-        return
-    sl = SectionList()
-    period = d["bitrate"]*1/1200
-    pairs = list(lre(d["signal"]))
-    ones = 0
-    bits = ""
-    for v, l in pairs:
-        if v == 1:
-            #print(l, period, l < 3.0/16*period)
-            if l < 3.0/8*period:
-                ones += 1
-                if ones == 2:
-                    bits += "1"
-                    #print("1", end="")
-                    ones = 0
-            else:
-                bits += "0"
-                #print("0", end="")
-                ones = 0
-    with open(fname, "w") as f:
-        f.write(bits)
-
-
 def getSections(d, pitch, removeSpikes=True):
     # print("levels",levell,levelh,"period",period)
     if "signal" not in d:
@@ -280,11 +246,11 @@ def getSections(d, pitch, removeSpikes=True):
 
     starts = getStarts(pairs)
     if removeSpikes:
-        #print("before removal",len(pairs))
+        # print("before removal",len(pairs))
         idx = [i for i, (v, l) in enumerate(pairs) if l > period/8]
         pairs = [pairs[i] for i in idx]
         starts = [starts[i] for i in idx]
-        #print("after removal",len(pairs))
+        # print("after removal",len(pairs))
 
     offset = 0
 

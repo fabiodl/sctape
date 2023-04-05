@@ -17,8 +17,11 @@ def maybeByte(bs):
     return n
 
 
-def getSections(filename, opts):
-    data = open(filename).read()
+def readBit(filename, opts):
+    return getSections(open(filename).read())
+
+
+def getSections(data):
     sl = SectionList()
     offset = 0
     while offset < len(data):
@@ -67,7 +70,7 @@ def toBitRemaster(d, fastStart=True):
     data = ""
     for s in d["sections"]:
         stype = s["type"]
-        print("section", s)
+        # print("section", s)
         if stype == "bytes":
             code = KeyCode.code[s["keycode"]]
             if fastStart:
