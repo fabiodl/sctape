@@ -121,7 +121,7 @@ def decode_command(command, line_number, suppress_error=True):
 def decode_ascii(byte):
     ch = int(byte, 16)
 
-    if ch in [0x0D] or 0x20 <= ch <= 0x7E:
+    if ch in [0x0D] or 0x20 <= ch <= 0x7E and ch != "\\":
         return chr(ch)
     else:
         return "\\x{}".format(byte)

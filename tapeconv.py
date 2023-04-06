@@ -53,16 +53,18 @@ def audioFindBytes(filename, levell, levelh, opts):
 
 
 def audioRead(filename, opts):
-    if "level" in opts:
-        if opts["level"] == "best":
-            return rhoSweepMax(audioFindBytes, filename, opts)
-        else:
-            lev = float(opts["level"])
-            d = audioparse.getRawSection(filename, lev, lev, opts)
-            return d
 
-    else:
+    deflev = "best" if opts["output_type"] in ["byteseq", "bitseq"] else "auto"
+
+    level = opts.get("level", deflev)
+
+    if level == "best":
+        return rhoSweepMax(audioFindBytes, filename, opts)
+    elif level == "auto":
         return rhoSweep(audioToRemasteredBit, filename, "auto", opts)
+    else:
+        lev = float(opts["level"])
+        return audioparse.getRawSection(filename, lev, lev, opts)
 
 
 # def wavRemaster(filename,d):
@@ -169,10 +171,9 @@ def convert(filename, outputtype, opts):
         raise Exception("Unknown output type ")
 
     print("specified options", opts)
-    if "input_type" in opts:
-        inputtype = opts["input_type"]
-    else:
-        inputtype = filename.split(".")[-1]
+
+    inputtype = opts.get("input_type", filename.split(".")[-1])
+    opts["output_type"] = outputtype
 
     if "remaster" not in opts or opts["remaster"] == "auto":
         if inputtype in ["basic", "bas"]:

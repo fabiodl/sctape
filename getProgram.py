@@ -3,15 +3,16 @@ import sys
 import argparse
 
 
-def extractBas(bin, a):
+def extractBas(bin, start):
+    a = start
     print(f"Extracting from {a:04x}")
     while (size := bin[a]) != 0:
         ret = a+4+size+1
         if bin[ret] != 0x0D:
             raise Exception("Line end not found")
         a = ret+1
-    # print(f"final addr {a:04x}")
-    return bin[0x9800:a+1]
+    print(f"final addr {a:04x}")
+    return bin[start:a+1]
 
 
 if __name__ == "__main__":
