@@ -2,23 +2,27 @@ import json
 import numpy as np
 from util import removeExtension
 
+
 def hexString(d):
     return "".join([f"{v:02x}" for v in d])
 
+
 def elemSerialize(x):
-    t=type(x)
-    #print("type",t)
+    t = type(x)
+    # print("type",t)
     if t in serializers:
         return serializers[t](x)
     return x
 
 
 def listSerialize(x):
-    if type(x[0])==np.int64 or type(x[0])==int:
+    if len(x) == 0:
+        return ""
+    if type(x[0]) == np.int64 or type(x[0]) == int:
         return hexString(x)
     else:
         return [elemSerialize(e) for e in x]
-    
+
 
 def dictSerialize(inp):
     out={}

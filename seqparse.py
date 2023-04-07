@@ -47,6 +47,8 @@ def isByte(x):
 def splitBits(data):
     out = ""
     splits = [i for i in range(2, len(data)) if data[i-2:i+1] == "110"]
+    if len(splits) == 0:
+        return out
     # print(splits)
     out += data[0:splits[0]]+" "
     w = 0

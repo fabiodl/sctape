@@ -160,7 +160,7 @@ def getOutname(filename, outputtype, opts, d):
     else:
         outPath = Path(removeExtension(filename) + suff + "." + outputtype)
     if "output_dir" in opts:
-        outPath = Path(opts["output_dir"]).joinpath(outPath)
+        outPath = Path(opts["output_dir"]) / str(outPath).strip("/")
     return outPath
 
 
