@@ -219,7 +219,9 @@ def convert(filename, outputtype, opts):
         pitch = 1
 
     getSections(d, pitch)
-    ignoreSectionErrors = "ignore_section_errors" in opts
+    ignoreSectionErrors = "ignore_section_errors" in opts or (
+        outputtype in ["bitseq", "byteseq"] and not "detect_section_errors" in opts)
+
     ignoreFFsections = "ignore_ff_sections" in opts
     print("Identifying sections")
     parseBytesSections(d["sections"], not ignoreSectionErrors,
@@ -246,7 +248,7 @@ def convert(filename, outputtype, opts):
 
 if __name__ == "__main__":
     options = [
-        "level=", "pitch=", "mode=", "ignore_section_errors",
+        "level=", "pitch=", "mode=", "ignore_section_errors","detect_section_errors",
         "ignore_ff_sections", "remaster=", "batch", "no_overwrite",
         "output_dir=", "output_filename=", "output_filename_from_content",
         "output_filename_8.3", "input_type=", "program_name=", "program_type=",

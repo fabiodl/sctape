@@ -14,17 +14,6 @@ One = np.hstack([v*np.ones(int(sampleRate/1200/4), dtype=np.int16)
 conv = {' ': Space, '0': Zero, '1': One}
 
 
-def writeWavFromBs(filename, data):
-    obj = wave.open(filename, 'wb')
-    obj.setnchannels(1)  # mono
-    obj.setsampwidth(2)
-    obj.setframerate(sampleRate)
-    obj.writeframesraw(Space)
-    for d in data:
-        obj.writeframesraw(conv[d])
-    obj.close()
-
-
 def writeWav(filename, d):
     obj = wave.open(filename, 'wb')
     obj.setnchannels(1)  # mono
@@ -33,6 +22,7 @@ def writeWav(filename, d):
     obj.writeframesraw(Space)
     for d in d["signal"]:
         obj.writeframesraw(np.int16(val*d))
+    obj.writeframesraw(Space)
     obj.close()
 
 

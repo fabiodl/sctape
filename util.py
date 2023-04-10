@@ -69,7 +69,6 @@ def rhoSweep(func, filename, rho, opts):
 def rhoSweepMax(func, filename, opts):
     best = -1
     bestd = None
-
     for div in range(1, int(opts.get("search_precision", 8))):
         s = 1.0/2**div
         for rho in np.arange(s, 1, 2*s):

@@ -1,9 +1,7 @@
 import pydub
 import numpy as np
-
 import json
 from scipy import signal
-
 from section import SectionList
 from numba import njit
 
@@ -51,10 +49,10 @@ def binarize(res, pth, nth, delta):
     alpha = 0.1**(1 / (hs / 1200 * 10))
     thalpha = 0.1**(1 / hs / 1200 * 3)
     m = 0
-    hth, lth = pth, nth  #dynamic thresholds
+    hth, lth = pth, nth  # dynamic thresholds
 
     for t in range(delta, len(res) - delta):
-        #print("lth,hth",lth,hth)
+        # print("lth,hth",lth,hth)
         m = alpha * m + (1 - alpha) * res[t]
         if res[t] > pth:
             hth = thalpha * hth + (1 - thalpha) * res[t]
@@ -76,12 +74,13 @@ def diffBinarize(dr, levell, levelh):
     t = 0
     startt = 0
     sign = 1 if dr[0] > 0 else -1
-
+    s = sign
     concdr = np.zeros_like(dr)
     for t in range(len(dr)):
-        s = 1 if dr[t] > 0 else -1
-        if s != sign:
-            #med=int(np.round((startt+t-1)/2))
+        if dr[t] != 0:
+            s = 1 if dr[t] > 0 else -1
+        if s != sign or t == len(dr)-1:
+            # med=int(np.round((startt+t-1)/2))
             tot = np.sum(dr[startt:t])
             med = np.argmin(np.abs(np.cumsum(dr[startt:t]) - tot / 2))
             concdr[startt + med] = tot
@@ -119,16 +118,17 @@ cache = Cache()
 def getResampled(y, levell, levelh, fr):
     if cache.data is None:
         print("resampling")
-        res = signal.resample(y, int(np.ceil(len(y) * hs / fr)))
-        dr = np.diff(res)
+        # res = signal.resample(y, int(np.ceil(len(y) * hs / fr)))
+        # dr = np.diff(res)
+        dr = np.diff(y)
         cache.data = dr
     dr = cache.data
 
-    #print("levels",levell,levelh)
-    #pth=levelh*np.max(res)
-    #nth=levell*np.min(res)
-    #delta=int(round(hs/4800/3))
-    #return binarize(res,pth,nth,delta)
+    # print("levels",levell,levelh)
+    # pth=levelh*np.max(res)
+    # nth=levell*np.min(res)
+    # delta=int(round(hs/4800/3))
+    # return binarize(res,pth,nth,delta)
 
     return diffBinarize(dr, levell, levelh)
 
@@ -148,11 +148,11 @@ def getRawSection(filename, rhol, rhoh, opts):
         period = bitrate * pitch / 1200
         levell = np.min(data) * rhol
         levelh = np.max(data) * rhoh
-        #print("levels",levell,levelh,"period",period)
+        # print("levels",levell,levelh,"period",period)
         d = {"bitrate": bitrate, "signal": getAbsolute(data, levell, levelh)}
     elif mode == "diff":
         d = {
-            "bitrate": 44100,
+            "bitrate": bitrate,  # 44100,
             "signal": getResampled(data, rhol, rhoh, bitrate)
         }
     elif mode == "slope":

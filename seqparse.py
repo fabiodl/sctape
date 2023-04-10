@@ -129,7 +129,7 @@ def alignBytes(data, newline_on):
             continue
         out += tok
         count += 1
-        if len(tok) > 2 and "error" in newline_on or tok == "0D" and "0D" in newline_on or count == 16 and "count" in newline_on:
+        if len(tok) > 2 and "error" in newline_on or tok == "0D" and "0D" in newline_on or count == 16 and "count" in newline_on or "all" in newline_on:
             out += "\n"
             count = 0
         else:
