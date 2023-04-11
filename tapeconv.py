@@ -253,7 +253,7 @@ if __name__ == "__main__":
         "output_dir=", "output_filename=", "output_filename_from_content",
         "output_filename_8.3", "input_type=", "program_name=", "program_type=",
         "program_start_addr=", "program_from=", "program_to=", "program_size=",
-        "program_rstrip=", "search_precision=", "newline_on="
+        "program_rstrip=", "search_precision=", "newline_on=", "resample="
     ]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:

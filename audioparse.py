@@ -115,22 +115,28 @@ class Cache:
 cache = Cache()
 
 
-def getResampled(y, levell, levelh, fr):
+def getResampled(y, levell, levelh, fr, resample):
     if cache.data is None:
-        print("resampling")
-        # res = signal.resample(y, int(np.ceil(len(y) * hs / fr)))
-        # dr = np.diff(res)
-        dr = np.diff(y)
+        if resample:
+            print("resampling")
+            res = signal.resample(y, int(np.ceil(len(y) * hs / fr)))
+            dr = np.diff(res)
+            br = hs
+        else:
+            # dr = np.diff(y)
+            br = fr
         cache.data = dr
-    dr = cache.data
+        cache.br = br
 
+    dr = cache.data
+    br = cache.br
     # print("levels",levell,levelh)
     # pth=levelh*np.max(res)
     # nth=levell*np.min(res)
     # delta=int(round(hs/4800/3))
     # return binarize(res,pth,nth,delta)
 
-    return diffBinarize(dr, levell, levelh)
+    return {"bitrate": br, "signal": diffBinarize(dr, levell, levelh)}
 
 
 def getRawSection(filename, rhol, rhoh, opts):
@@ -151,10 +157,13 @@ def getRawSection(filename, rhol, rhoh, opts):
         # print("levels",levell,levelh,"period",period)
         d = {"bitrate": bitrate, "signal": getAbsolute(data, levell, levelh)}
     elif mode == "diff":
-        d = {
-            "bitrate": bitrate,  # 44100,
-            "signal": getResampled(data, rhol, rhoh, bitrate)
-        }
+        res = opts.get("resample", "auto")
+        res = {"auto": bitrate != 44100,
+               "true": True,
+               "false": False
+               }[res]
+
+        d = getResampled(data, rhol, rhoh, bitrate, res)
     elif mode == "slope":
         d = {"bitrate": bitrate, "signal": getSlope(bitrate, data, rhoh)}
     else:
