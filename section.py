@@ -1,4 +1,4 @@
-from util import bigEndian, printable, lre
+from util import bigEndian, printable, lre, hexString
 import numpy as np
 
 
@@ -119,6 +119,17 @@ def parseBytes(si, so):
     return True
 
 
+def printSection(s):
+    print("{", end="")
+    for n, v in s.items():
+        if n in ["fail.checksum", "checksum"]:
+            v = f"{v:02X}"
+        if n in ["bytes"]:
+            v = hexString(v)
+        print(f"{n}: {v}", end=" ")
+    print(end="}")
+
+
 def parseBytesSections(sl, exceptOnError, ignoreFFsections):
     error = False
     for s in sl:
@@ -131,7 +142,7 @@ def parseBytesSections(sl, exceptOnError, ignoreFFsections):
                     error = True
 
     if error:
-        print(s)
+        printSection(s)
         print("Section errors, decoded", len(sl), "sections")
         if len(sl) < 10:
             for sec in sl:

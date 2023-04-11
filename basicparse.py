@@ -7,7 +7,7 @@ from section import KeyCode
 from util import removeExtension
 
 
-def writeBasic(filename, d):  #already parsed
+def writeBasic(filename, d, opt):  # already parsed
     fname = removeExtension(filename)
     codeChunks = []
     for s in d["sections"]:

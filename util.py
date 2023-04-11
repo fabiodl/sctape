@@ -11,6 +11,10 @@ def le(d):
     return sum([c << (8*i) for i, c in enumerate(d)])
 
 
+def hexString(x):
+    return " ".join([f"{v:02X}" for v in x])
+
+
 def leint(x, n):
     l = []
     for i in range(n):

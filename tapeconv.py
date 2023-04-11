@@ -78,7 +78,7 @@ def audioRead(filename, opts):
 #     tzxparse.writeTzxFromBs(filename,bs)
 
 
-def printInfo(filename, d):
+def printInfo(filename, d, opt):
     print("INFO", json.dumps(d["info"], sort_keys=True, indent=4))
 
 
@@ -96,12 +96,12 @@ readers = {
 
 writers = {
     "json": jsonparse.writeJson,
-    "bit": lambda f, d: bitparse.writeBit(f, d, True),
-    "rawbit": lambda f, d: bitparse.writeBit(f, d, False),
+    "bit": lambda f, d, opt: bitparse.writeBit(f, d, True),
+    "rawbit": lambda f, d, opt: bitparse.writeBit(f, d, False),
     "bas": basparse.writeBas,
     "wav": wavparse.writeWav,
-    "list": lambda f, d: print(f, listContent(d)),
-    "summary": lambda f, d: None,
+    "list": lambda f, d, opt: print(f, listContent(d)),
+    "summary": lambda f, d, opt: None,
     "tzx": tzxparse.writeTzx,
     "basic": basicparse.writeBasic,
     "bin": basparse.writeBin,
@@ -172,7 +172,7 @@ def convert(filename, outputtype, opts):
 
     print("specified options", opts)
 
-    inputtype = opts.get("input_type", filename.split(".")[-1])
+    inputtype = opts.get("input_type", filename.split(".")[-1].lower())
     opts["output_type"] = outputtype
 
     if "remaster" not in opts or opts["remaster"] == "auto":
@@ -243,17 +243,17 @@ def convert(filename, outputtype, opts):
     print("Writing output", outfile)
     parent_dir = outfile.parent
     parent_dir.mkdir(parents=True, exist_ok=True)
-    writers[outputtype](str(outfile), d)
+    writers[outputtype](str(outfile), d, opts)
 
 
 if __name__ == "__main__":
     options = [
-        "level=", "pitch=", "mode=", "ignore_section_errors","detect_section_errors",
+        "level=", "pitch=", "mode=", "ignore_section_errors", "detect_section_errors",
         "ignore_ff_sections", "remaster=", "batch", "no_overwrite",
         "output_dir=", "output_filename=", "output_filename_from_content",
         "output_filename_8.3", "input_type=", "program_name=", "program_type=",
         "program_start_addr=", "program_from=", "program_to=", "program_size=",
-        "program_rstrip=", "search_precision="
+        "program_rstrip=", "search_precision=", "newline_on="
     ]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:

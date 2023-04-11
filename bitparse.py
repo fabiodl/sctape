@@ -37,7 +37,7 @@ def getSections(data, ignore_section_errors=False):
             sl.pushLevel(offset, 0, 1)
             offset += 1
         else:
-            msg = f"Invalid char in bit file {data[offset]} at position {offset}"
+            msg = f"Invalid char in bit file {data[offset]} at position {offset} out of {len(data)}, {data[offset:offset+11]}"
             if ignore_section_errors:
                 print(msg)
                 offset += 1
@@ -90,18 +90,18 @@ def toBitRemaster(d, fastStart=True):
 
 
 def genSignal(d, sampleRate, sectionRemaster):
-    val=1
-    Space=np.zeros(int(sampleRate/1200))
-    Zero=np.hstack([v*np.ones(int(sampleRate/1200/2)) for v in [val, -val]])
-    One=np.hstack([v*np.ones(int(sampleRate/1200/4))
-                    for v in [val, -val, val, -val]])
-    conv={' ': Space, '0': Zero, '1': One}
+    val = 1
+    Space = np.zeros(int(sampleRate/1200))
+    Zero = np.hstack([v*np.ones(int(sampleRate/1200/2)) for v in [val, -val]])
+    One = np.hstack([v*np.ones(int(sampleRate/1200/4))
+                     for v in [val, -val, val, -val]])
+    conv = {' ': Space, '0': Zero, '1': One}
 
     if sectionRemaster:
-        bits=toBitRemaster(d, True)
+        bits = toBitRemaster(d, True)
     else:
-        bits=toBitRaw(d)
-    sig=np.hstack([conv[b] for b in bits])
+        bits = toBitRaw(d)
+    sig = np.hstack([conv[b] for b in bits])
 
     return sig
 

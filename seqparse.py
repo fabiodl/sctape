@@ -137,14 +137,15 @@ def alignBytes(data, newline_on):
     return out
 
 
-def writeBitSequence(fname, d):
+def writeBitSequence(fname, d, opts):
     with open(fname, "w") as g:
         g.write(getBitSequence(d))
 
 
-def writeByteSequence(fname, d):
+def writeByteSequence(fname, d, opts):
+    newline_on = opts.get("newline_on", "all")
     with open(fname, "w") as g:
-        out = alignBytes(packBytes(splitBits(getBitSequence(d))), "0D count")
+        out = alignBytes(packBytes(splitBits(getBitSequence(d))), newline_on)
         g.write(out)
 
 
@@ -167,4 +168,4 @@ def seqToBit(data):
 
 
 def readByteSeq(filename, opts):
-    return bitparse.getSections(seqToBit(open(filename).read()))
+    return bitparse.getSections(seqToBit(open(filename).read()), "ignore_section_errors" in opts)

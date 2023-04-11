@@ -1,18 +1,20 @@
-from  section import KeyCode
-from util import removeExtension,beint
+from section import KeyCode
+from util import removeExtension, beint
 import numpy as np
 
-def writeFile(filename,l):
-    with open(filename,"wb") as f:
+
+def writeFile(filename, l):
+    with open(filename, "wb") as f:
         f.write(bytes(l))
 
-def writeBas(filename,d): #already parsed    
-    codeChunks=[]
+
+def writeBas(filename, d, opts):  # already parsed
+    codeChunks = []
     for s in d["sections"]:
-        if s["type"]=="bytes" and KeyCode.code[s["keycode"]]==KeyCode.BasicData:
+        if s["type"] == "bytes" and KeyCode.code[s["keycode"]] == KeyCode.BasicData:
             codeChunks.append(s["Program"])
 
-    if len(codeChunks)==1:        
+    if len(codeChunks)==1:
         writeFile(filename,codeChunks[0])
     else:
         fname=removeExtension(filename)
@@ -21,19 +23,19 @@ def writeBas(filename,d): #already parsed
 
 
 
-def writeBin(filename,d): #already parsed    
+def writeBin(filename,d,opt): #already parsed
     fname=removeExtension(filename)
     codeChunks=[]
     idx=0
     for s in d["sections"]:
         if s["type"]=="bytes":
-            writeFile(f"{fname}{idx}.bin",s["bytes"])            
+            writeFile(f"{fname}{idx}.bin",s["bytes"])
             idx+=1
 
 
 def parity(x):
     return 0x100-(0xFF&int(np.sum(x)))
-            
+
 def getBasicSections(program,opts):
     d={
         "sections":[]
@@ -58,8 +60,8 @@ def getBasicSections(program,opts):
         else:
             print("\nWarning: start address not specified\n")
             startAddr=0xC000
-        
-        
+
+
     if "program_name" not in opts:
         print("\nWarning: program name not specified\n")
     else:
@@ -73,13 +75,13 @@ def getBasicSections(program,opts):
 
         headerPayload=filename+programLength
         if isMachine:
-            headerPayload+=beint(startAddr,2)        
+            headerPayload+=beint(startAddr,2)
         p=parity(headerPayload)
         sections.append({
             "t":-1,
             "type":"bytes",
             "bytes": header+headerPayload+[p,0x00,0x00]})
-    
+
     if isMachine:
         header=[KeyCode.MachineData]
     else:
@@ -91,9 +93,9 @@ def getBasicSections(program,opts):
         "type":"bytes",
         "bytes":header+program+[p,0x00,0x00]})
     return d
-    
-        
-    
+
+
+
 def readBas(filename,opts):
     start,end=0,None
     d=open(filename,"rb").read()
@@ -111,5 +113,3 @@ def readBas(filename,opts):
     print(f"Reading {filename} range {start:04x} : {end:04x}")
     program=list(d[start:end])
     return getBasicSections(program,opts)
-
-    

@@ -25,15 +25,15 @@ def listSerialize(x):
 
 
 def dictSerialize(inp):
-    out={}
-    for k,v in inp.items():
-        out[k]=elemSerialize(v)
+    out = {}
+    for k, v in inp.items():
+        out[k] = elemSerialize(v)
     return out
 
-    
-serializers={
-    np.int64:lambda x:int(x),
-    np.ndarray: lambda x:x.tolist(),
+
+serializers = {
+    np.int64: lambda x: int(x),
+    np.ndarray: lambda x: x.tolist(),
     list: listSerialize,
     dict: dictSerialize
 }
@@ -47,7 +47,7 @@ def jsonSerialize(d):
 def hexList(s):
     return [ int(s[i:i+2],16) for i in range(0,len(s),2)]
 
-def writeJson(outfile,d):
+def writeJson(outfile,d,opts):
     with open(outfile,"w") as f:
         f.write(jsonSerialize(d))
 

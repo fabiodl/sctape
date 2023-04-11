@@ -2,19 +2,19 @@ import numpy as np
 from itertools import chain
 import json
 
-from util import le,leint
+from util import le, leint
 
 
 class BlockType:
-    directRecording=0x15
-    info=0x35
-    glue=0x5A
+    directRecording = 0x15
+    info = 0x35
+    glue = 0x5A
 
 
 class Encoder:
-    def __init__(self,trate):
-        self.data=bytearray()
-        self.trate=trate
+    def __init__(self, trate):
+        self.data = bytearray()
+        self.trate = trate
         self.openChunk()
 
     def openChunk(self):
@@ -125,7 +125,7 @@ def writeTzxFromBs(filename,bs):
         f.write(data)
 
 
-def writeTzx(filename,d):
+def writeTzx(filename,d,opt):
     if d["bitrate"]!=44100:
 
         resample=44100
