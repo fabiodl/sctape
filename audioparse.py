@@ -123,7 +123,7 @@ def getResampled(y, levell, levelh, fr, resample):
             dr = np.diff(res)
             br = hs
         else:
-            # dr = np.diff(y)
+            dr = np.diff(y)
             br = fr
         cache.data = dr
         cache.br = br
