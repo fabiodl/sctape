@@ -58,11 +58,10 @@ def encodeBytes(x):
 
 def toBitRaw(d):
     data = ""
-    bitrate = d["bitrate"]
     for s in d["sections"]:
         stype = s["type"]
         if stype == "level":
-            data += " "*int(np.round(s["length"]/bitrate*1200))
+            data += " "*int(np.round(s["length"]/d["bitrate"]*1200))
         elif stype == "header":
             data += "1"*s["count"]
         elif stype == "bytes":
@@ -102,11 +101,12 @@ def genSignal(d, sampleRate, sectionRemaster):
     else:
         bits = toBitRaw(d)
     sig = np.hstack([conv[b] for b in bits])
-
+    d["bitrate"] = sampleRate
     return sig
 
 
-def writeBit(filename, d, remaster):
+def writeBit(filename, d, opt):
+    remaster = opt["remaster"] == "section"
     with open(filename, "w") as f:
         if remaster:
             f.write(toBitRemaster(d))

@@ -34,7 +34,6 @@ def getSlope(rate, y, level):
                         output='sos')
     filtered = signal.sosfilt(sos, y)
     slope = np.where(np.diff(filtered) > 0, -1, 1)
-    slope = np.where(np.diff(filtered) > 0, -1, 1)
     return slope
 
 

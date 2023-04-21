@@ -96,8 +96,7 @@ readers = {
 
 writers = {
     "json": jsonparse.writeJson,
-    "bit": lambda f, d, opt: bitparse.writeBit(f, d, True),
-    "rawbit": lambda f, d, opt: bitparse.writeBit(f, d, False),
+    "bit": bitparse.writeBit,
     "bas": basparse.writeBas,
     "wav": wavparse.writeWav,
     "list": lambda f, d, opt: print(f, listContent(d)),
@@ -152,7 +151,7 @@ def getOutname(filename, outputtype, opts, d):
 
     suffix = {"none": "", "signal": "", "bit": "_rb", "section": "_rs"}
 
-    suff = suffix[opts["remaster"]]
+    suff = opts.get("suffix", suffix[opts["remaster"]])
     if "output_filename" in opts:
         outPath = Path(opts["output_filename"])
     elif "output_filename_8.3" in opts:
@@ -199,7 +198,6 @@ def convert(filename, outputtype, opts):
 
     print("Reading input")
     d = readers[inputtype](filename, opts)
-
     info = d.setdefault("info", {})
 
     info.setdefault("source", {
@@ -219,30 +217,31 @@ def convert(filename, outputtype, opts):
         pitch = 1
 
     getSections(d, pitch)
+
     ignoreSectionErrors = "ignore_section_errors" in opts or (
         outputtype in ["bitseq", "byteseq"] and not "detect_section_errors" in opts)
 
     ignoreFFsections = "ignore_ff_sections" in opts
     print("Identifying sections")
-    parseBytesSections(d["sections"], not ignoreSectionErrors,
-                       ignoreFFsections)
+    if "sections" in d:
+        parseBytesSections(d["sections"], not ignoreSectionErrors,
+                           ignoreFFsections)
     if outputtype != "list":
         printSummary(d, False)
 
     print("remastering with mode", remaster)
     if remaster == "section":
         print("Remastering sections")
-        d["bitrate"] = remrate
         d["signal"] = bitparse.genSignal(d, remrate, True)
     elif remaster == "bit":
         print("Remastering bits")
-        d["bitrate"] = remrate
         d["signal"] = bitparse.genSignal(d, remrate, False)
     if "output_filename_from_content" in opts:
         outfile = getOutname(filename, outputtype, opts, d)
     print("Writing output", outfile)
     parent_dir = outfile.parent
     parent_dir.mkdir(parents=True, exist_ok=True)
+
     writers[outputtype](str(outfile), d, opts)
 
 
@@ -253,7 +252,7 @@ if __name__ == "__main__":
         "output_dir=", "output_filename=", "output_filename_from_content",
         "output_filename_8.3", "input_type=", "program_name=", "program_type=",
         "program_start_addr=", "program_from=", "program_to=", "program_size=",
-        "program_rstrip=", "search_precision=", "newline_on=", "resample="
+        "program_rstrip=", "search_precision=", "newline_on=", "resample=", "suffix="
     ]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:

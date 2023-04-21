@@ -5,11 +5,14 @@ import numpy as np
 class KeyCode:
     BasicHeader, MachineHeader = 0x16, 0x26
     BasicData, MachineData = 0x17, 0x27
+    MusicHeader, MusicData = 0x57, 0x58
     name = {
         BasicHeader: "Basic header",
         BasicData: "Basic data",
         MachineHeader: "ML header",
-        MachineData: "ML data"
+        MachineData: "ML data",
+        MusicHeader: "Music header",
+        MusicData: "Music data"
     }
     code = {v: k for k, v in name.items()}
 
@@ -106,10 +109,10 @@ def parseBytes(si, so):
                 so["fail.length"] = len(program)
                 return False
             else:
-                print("checksum ok")
+                print(KeyCode.name[secType], "checksum ok")
             so["keycode"] = KeyCode.name[secType]
             so["Program"] = program
-            so["Patity"] = parity
+            so["Parity"] = parity
             so["Dummy"] = dummyData
             so["length"] = len(program)
     else:
@@ -124,7 +127,7 @@ def printSection(s):
     for n, v in s.items():
         if n in ["fail.checksum", "checksum"]:
             v = f"{v:02X}"
-        if n in ["bytes"]:
+        if n in ["bytes", "Program", "Dummy", "Parity"]:
             v = hexString(v)
         print(f"{n}: {v}", end=" ")
     print(end="}")
@@ -267,26 +270,30 @@ def getSections(d, pitch, removeSpikes=True):
 
     t = 0
     sl = SectionList()
-    follower = False
+
+    def pushLongSpace(ps):
+        for p in ps:
+            if p[1] > period:
+                sl.pushLevel(t, p[0], p[1])
+
     while offset < len(pairs):
         t = starts[offset]
         bi = maybeByte(pairs[offset:offset+4*11], period, offset == 0)
-        if bi is not None:
-            follower = True
-        if follower:
-            # print(pairs[offset:offset+4*11],bi)
-            if bi is None:
-                follower = False
+
         if bi is not None:
             off, val = bi
             sl.pushByte(t, val)
+            pushLongSpace(pairs[offset:offset+4*11])
             offset += off
         elif isOne(pairs[offset:offset+4], period, True, False):
+            pushLongSpace(pairs[offset:offset+4])
             sl.pushHeader(t)
             offset += 4
         else:
+            print("pushing level")
             sl.pushLevel(t, pairs[offset][0], pairs[offset][1])
             offset += 1
+
     sl.finalize()
     d["sections"] = sl.sections
     return d
