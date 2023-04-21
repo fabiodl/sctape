@@ -290,7 +290,6 @@ def getSections(d, pitch, removeSpikes=True):
             sl.pushHeader(t)
             offset += 4
         else:
-            print("pushing level")
             sl.pushLevel(t, pairs[offset][0], pairs[offset][1])
             offset += 1
 

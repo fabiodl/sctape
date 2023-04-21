@@ -1,3 +1,4 @@
+import pathlib
 from section import SectionList
 from util import lre
 import bitparse
@@ -72,14 +73,14 @@ def splitBits(data):
 
 def toByte(s):
     if len(s) > 11:
-        head = s[0]
-        core = s[1:]
-        if head == "1":
-            core = head+core
-            head = ""
+        idx = len(s)-1
+        while idx > 0 and s[idx] == "1":
+            idx -= 1
 
-        if core == "1"*len(core):
-            return f"{head}h{len(core)}"
+        head = s[:idx+2]
+        core = s[idx+2:]
+        if len(core) >= 11:
+            return f"{head} h{len(core)}"
 
     if len(s) != 11 or s[0] != '0' or s[-2:] != "11":
         print(f"invalid [{s}]")
@@ -144,9 +145,22 @@ def writeBitSequence(fname, d, opts):
 
 def writeByteSequence(fname, d, opts):
     newline_on = opts.get("newline_on", "all")
-    with open(fname, "w") as g:
-        out = alignBytes(packBytes(splitBits(getBitSequence(d))), newline_on)
-        g.write(out)
+    out = alignBytes(
+        packBytes(splitBits(getBitSequence(d))), newline_on)
+    if "split_on_header" in opts:
+        path = pathlib.Path(fname)
+        chunks = [c for c in out.split("h") if c != ""]
+        for i, chunk in enumerate(chunks):
+            ofname = path.parent/f"{path.stem}{i:02d}{path.suffix}"
+            print("chunk as", ofname)
+            with open(ofname, "w") as g:
+                g.write("h"+chunk)
+
+    else:
+        with open(fname, "w") as g:
+            out = alignBytes(
+                packBytes(splitBits(getBitSequence(d))), newline_on)
+            g.write(out)
 
 
 def seqToBit(data):
