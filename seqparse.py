@@ -176,6 +176,8 @@ def seqToBit(data):
             else:
                 out += " "*1200
             out += "1"*3600
+        elif w == "nospace_H":
+            out += "1"*3600
         else:
             out += w
     return out

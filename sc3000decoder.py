@@ -61,6 +61,7 @@ def decode_hex_string(hex_string, suppress_error=True):
     return result
 
 
+# LEN LINE_L LINE_H 00 00 .... 0D
 def decode_one_line(line, suppress_error=True):
     result = ""
     command_length = int(line[0:2], 16)
@@ -74,12 +75,13 @@ def decode_one_line(line, suppress_error=True):
 def decode_command(command, line_number, suppress_error=True):
     result = ""
     zipper = zip(command[0::2], command[1::2])
-    force_ascii = False
+    inside_data = False
+    inside_rem = False
     inside_quote = False
 
     for l, (i, j) in enumerate(zipper):
         current_result = ""
-        if i+j < "80" or force_ascii or inside_quote:
+        if i+j < "80" or inside_data or inside_rem or inside_quote:
             current_result = decode_ascii(i+j)
         elif i+j == "80":
             i, j = next(zipper)
@@ -106,13 +108,16 @@ def decode_command(command, line_number, suppress_error=True):
                     raise UnknownCommandException(msg)
 
         # Characters between Double quote, or after DATA or REM, should be treated as ascii
-        if current_result in ["DATA", "REM"]:
+        if current_result == "DATA":
+            inside_data = True
+        elif current_result == "REM":
+            inside_rem = True
             # Ignore the rest of the line
             # https://www.c64-wiki.com/wiki/REM
-            force_ascii = True
-        if current_result == '"':
+        elif current_result == '"':
             inside_quote = not inside_quote
-
+        elif current_result == ":":
+            inside_data = False
         result += current_result
 
     return result
@@ -121,10 +126,10 @@ def decode_command(command, line_number, suppress_error=True):
 def decode_ascii(byte):
     ch = int(byte, 16)
 
-    if ch in [0x0D] or 0x20 <= ch <= 0x7E and ch != "\\":
+    if ch in [] or 0x20 <= ch <= 0x7E and ch != "\\":
         return chr(ch)
     else:
-        return "\\x{}".format(byte)
+        return f"\\x{byte}"
 
 
 def save_decoded_to(filepath, decoded):
