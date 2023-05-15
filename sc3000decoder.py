@@ -37,13 +37,15 @@ def print_decoded(decoded, pretty_format=True):
 def decode_hex_string(hex_string, suppress_error=True):
     result = {"raw": hex_string, "result": []}
     i = 0
-    MIN_COMMAND_LENGTH = 14
-    while i < len(hex_string)-MIN_COMMAND_LENGTH:
+    while i < len(hex_string):
         result_i = {"byte": i, "line": "", "cmd": "", "raw": ""}
         if hex_string[i:i+4] == "0000":
-            result_i["cmd"] = "End of script, remaining hex is {}".format(
-                hex_string[i:])
-            di = len(hex_string) - i
+            bind = hex_string[i+4:]
+            if len(bind) > 0:
+                result_i["cmd"] = f"\\bin " + hex_string[i:]
+                di = len(hex_string) - i
+            else:
+                return result
         else:
             try:
                 di, result_i["line"], result_i["cmd"] = decode_one_line(

@@ -29,7 +29,9 @@ def readBasic(filename, opts):
     result = ""
     for line in encoded:
         result += line["encoded"]
-    resultb = list(binascii.a2b_hex(result)) + [0x00, 0x00]
+    resultb = list(binascii.a2b_hex(result))
+    if "\\bin" not in encoded[-1]["raw"]:
+        resultb += [0x00, 0x00]
     return getBasicSections(resultb, opts)
 
 
