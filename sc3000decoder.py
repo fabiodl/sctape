@@ -46,7 +46,7 @@ def decode_hex_string(hex_string, suppress_error=True):
                 di = len(hex_string) - i
             else:
                 return result
-        else:
+        elif len(hex_string) >= i+14:
             try:
                 di, result_i["line"], result_i["cmd"] = decode_one_line(
                     hex_string[i:], suppress_error)
@@ -58,6 +58,9 @@ def decode_hex_string(hex_string, suppress_error=True):
             except UnknownCommandException as e:
                 print("Error: {}".format(e))
                 break
+        else:
+            return result
+
         i += di
         result["result"].append(result_i)
     return result

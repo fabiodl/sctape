@@ -14,8 +14,8 @@ COMMAND = {
     "85": "DELETE",
     "86": "RUN",
     "87": "CONT",
-    "88": "LOAD", # CLOAD
-    "89": "SAVE", # CSAVE
+    "88": "LOAD",  # CLOAD
+    "89": "SAVE",  # CSAVE
     "8A": "VERIFY",
     "8B": "NEW",
     "8C": "RENUM",
@@ -105,6 +105,7 @@ COMMAND = {
     "E3": "THEN",
     "E4": "TAB",
     "E5": "SPC",
+    "F0": "SAVE",
     "F5": "MERGE",
     "F6": "COMSAVE",
     "F7": "COMLOAD",
