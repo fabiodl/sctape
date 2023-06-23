@@ -128,13 +128,16 @@ def decode_command(command, line_number, suppress_error=True):
     return result
 
 
-def decode_ascii(byte):
-    ch = int(byte, 16)
-
-    if ch in [] or 0x20 <= ch <= 0x7E and ch != "\\":
+def escape_char(ch, toPass=[]):
+    if ch in toPass or 0x20 <= ch <= 0x7E and ch != "\\":
         return chr(ch)
     else:
-        return f"\\x{byte}"
+        return f"\\x{ch:02X}"
+
+
+def decode_ascii(byte):
+    ch = int(byte, 16)
+    return escape_char(ch)
 
 
 def save_decoded_to(filepath, decoded):

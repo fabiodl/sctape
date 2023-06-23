@@ -106,7 +106,8 @@ writers = {
     "bin": basparse.writeBin,
     "info": printInfo,
     "bitseq": seqparse.writeBitSequence,
-    "byteseq": seqparse.writeByteSequence
+    "byteseq": seqparse.writeByteSequence,
+    "filename": basicparse.writeFilename
 }
 
 remrate = 44100
@@ -149,9 +150,11 @@ def getOutname(filename, outputtype, opts, d):
                 if "Filename" in sec:
                     filename = sec["Filename"]
 
-    suffix = {"none": "", "signal": "", "bit": "_rb", "section": "_rs"}
-
-    suff = opts.get("suffix", suffix[opts["remaster"]])
+    if outputtype == "byteseq" and "suffix" not in opts and "mode" in opts:
+        suff = "."+opts["mode"]
+    else:
+        suffix = {"none": "", "signal": "", "bit": "_rb", "section": "_rs"}
+        suff = opts.get("suffix", suffix[opts["remaster"]])
     if "output_filename" in opts:
         outPath = Path(opts["output_filename"])
     elif "output_filename_8.3" in opts:
@@ -253,7 +256,7 @@ if __name__ == "__main__":
         "output_filename_8.3", "input_type=", "program_name=", "program_type=",
         "program_start_addr=", "program_from=", "program_to=", "program_size=",
         "program_rstrip=", "search_precision=", "newline_on=", "resample=", "suffix=",
-        "split_on_header"
+        "split_on_header", "basic_raw_encoding"
     ]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:

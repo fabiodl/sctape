@@ -29,13 +29,15 @@ def encode_one_line(line):
         return encoded
 
     except Exception as e:
-        line_number, command = line.split()
-        print("LINE NUMBER IS", line_number)
-        if line_number == "\\bin":
-            return command
-        else:
-            print("unable to convert LINE", line)
-            raise e
+        tok = line.split()
+        if len(tok) == 2:
+            line_number, command = tok
+            print("LINE NUMBER IS", line_number)
+            if line_number == "\\bin":
+                return command
+
+        print(f"unable to convert LINE '{line}'")
+        raise e
 
 
 def encode_line_number(line_number):

@@ -1,4 +1,4 @@
-from sc3000decoder import read_bas_as_hex_string, decode_hex_string, print_decoded, save_decoded_to
+from sc3000decoder import read_bas_as_hex_string, decode_hex_string, print_decoded, save_decoded_to, escape_char
 from sc3000encoder import encode_script_string
 import binascii
 from basparse import getBasicSections
@@ -11,8 +11,7 @@ def writeBasic(filename, d, opt):  # already parsed
     fname = removeExtension(filename)
     codeChunks = []
     for s in d["sections"]:
-        if s["type"] == "bytes" and KeyCode.code[
-                s["keycode"]] == KeyCode.BasicData:
+        if s["type"] == "bytes" and KeyCode.code[s["keycode"]] == KeyCode.BasicData:
             codeChunks.append(s["Program"])
 
     if len(codeChunks) == 1:
@@ -22,8 +21,27 @@ def writeBasic(filename, d, opt):  # already parsed
             decode(f"{fname}{idx}.basic", c)
 
 
+def writeFilename(filename, d, opt):
+    fname = removeExtension(filename)
+    names = []
+    for s in d["sections"]:
+        if s["type"] == "bytes" and KeyCode.code[s["keycode"]] == KeyCode.BasicHeader:
+            names.append(s["Filename"])
+    if len(names) == 1:
+        open(fname + ".filename", "w").write(names[0])
+    else:
+        for idx, na in enumerate(names):
+            open(f"{fname}{idx}.filename", "w").write(na)
+
+
 def readBasic(filename, opts):
-    script_string = open(filename).read()
+    if "basic_raw_encoding" in opts:
+        raw = open(filename, "rb").read()
+        # print("==RAW==", raw)
+        script_string = "".join([escape_char(ch, toPass=[0x0A])
+                                 for ch in raw if ch not in [0x01, 0x0D]])
+    else:
+        script_string = open(filename).read()
     suppress_error = False
     encoded = encode_script_string(script_string, suppress_error)
     result = ""
