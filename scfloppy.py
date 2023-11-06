@@ -191,7 +191,7 @@ class Floppy:
 
         fp = 0
         SECSIZE = SECTORSPERCLUSTER*SECTORSIZE
-        #print("chain",[hex(c) for c in chain],"lu",lastUsage)
+        # print("chain",[hex(c) for c in chain],"lu",lastUsage)
         for c, n in zip(chain, chain[1:]+[lastUsage]):
             self.data[fs+c] = n
             secstart = c*SECSIZE
@@ -236,97 +236,95 @@ class Floppy:
         fat = self.get(FATTRACK, FATSECTOR, 160)
         chains = [-1]*160
 
-        for idx,fname in enumerate(self.files):
-            start,_=self.files[fname]
+        for idx, fname in enumerate(self.files):
+            start, _ = self.files[fname]
             if start >= 160:
-                print("File",fname,"starts from invalid cluster",start)
+                print("File", fname, "starts from invalid cluster", start)
                 continue
 
-            chain,lastUsage=self.getChain(start)
+            chain, lastUsage = self.getChain(start)
             for c in chain:
-                chains[c]=idx+1
+                chains[c] = idx+1
 
-        def clusterState(t,c):
-            idx=t*CLUSTERSPERTRACK+c
-            s=f"[{idx:02x}]{fat[idx]:02x}"
-            if chains[t*CLUSTERSPERTRACK+c]>=0:
-                s+=f"({chains[idx]:02d})"
+        def clusterState(t, c):
+            idx = t*CLUSTERSPERTRACK+c
+            s = f"[{idx:02x}]{fat[idx]:02x}"
+            if chains[t*CLUSTERSPERTRACK+c] >= 0:
+                s += f"({chains[idx]:02d})"
             else:
-               s+=" "*4
+                s += " "*4
             return s
 
-
         for t in range(TRACKS):
-            status=" ".join([f"{clusterState(t,c)}" for c in range(CLUSTERSPERTRACK)])
-            print(f"{t:2d}",status)
+            status = " ".join(
+                [f"{clusterState(t,c)}" for c in range(CLUSTERSPERTRACK)])
+            print(f"{t:2d}", status)
 
 
 def canonicalName(name):
     if "." in name:
-        tok=name.split(".")
-        n=".".join(tok[:-1])
-        e=tok[-1]
-        name=n[:8].ljust(8)+"."+e
+        tok = name.split(".")
+        n = ".".join(tok[:-1])
+        e = tok[-1]
+        name = n[:8].ljust(8)+"."+e
     return name
 
 
-
-def extract(f,dirname):
+def extract(f, dirname):
     pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
     for fname in f.files:
-        with open(os.path.join(dirname,fname),"wb") as of:
+        with open(os.path.join(dirname, f"{fname}"), "wb") as of:
             of.write(f.getFile(fname))
 
-    for c,d in f.getSystem():
-        with open(os.path.join(dirname,f"IPL{c}"),"wb") as of:
+    for c, d in f.getSystem():
+        with open(os.path.join(dirname, f"IPL{c}"), "wb") as of:
             of.write(d)
 
 
-
-
-def pack(f,dirname):
+def pack(f, dirname):
     for fname in sorted(os.listdir(dirname)):
-        if fname[:3]=="IPL":
-            d=open(os.path.join(dirname,fname),"rb").read()
-            f.addSystem(int(fname[3:]),d)
+        if fname[:3] == "IPL":
+            d = open(os.path.join(dirname, fname), "rb").read()
+            f.addSystem(int(fname[3:]), d)
     for fname in sorted(os.listdir(dirname)):
-        if fname[:3]!="IPL":
-            d=open(os.path.join(dirname,fname),"rb").read()
-            f.addFile(fname,d)
-
-def setSystem(f,fname):
-    d=open(fname,"rb").read()
-    f.addSystem(0,d)
+        if fname[:3] != "IPL":
+            d = open(os.path.join(dirname, fname), "rb").read()
+            f.addFile(fname, d)
 
 
-commands={
-    "help":lambda f: print("Available commands "+" ".join(getLongOptions())),
-    "open":lambda f,opt: f.open(opt),
-    "save":lambda f,opt: f.save(opt),
-    "extract":extract,
-    "pack":pack,
-    "format":lambda f: f.format(),
-    "list":lambda f : f.printSummary(),
-    "listfat":lambda f : f.printFat(),
-    "setSystem":setSystem
+def setSystem(f, fname):
+    d = open(fname, "rb").read()
+    f.addSystem(0, d)
+
+
+commands = {
+    "help": lambda f: print("Available commands "+" ".join(getLongOptions())),
+    "open": lambda f, opt: f.open(opt),
+    "save": lambda f, opt: f.save(opt),
+    "extract": extract,
+    "pack": pack,
+    "format": lambda f: f.format(),
+    "list": lambda f: f.printSummary(),
+    "listfat": lambda f: f.printFat(),
+    "setSystem": setSystem
 }
 
 
 def getLongOptions():
-    return [c+"=" if len(signature(f).parameters)>1 else c for (c,f) in commands.items()]
+    return [c+"=" if len(signature(f).parameters) > 1 else c for (c, f) in commands.items()]
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
-    if len(sys.argv)<2:
-        print("Usage",sys.argv[0],"--command1[=args] --command2[=args]")
+    if len(sys.argv) < 2:
+        print("Usage", sys.argv[0], "--command1[=args] --command2[=args]")
     else:
 
-        optlist,_=getopt.getopt(sys.argv[1:],"",getLongOptions())
-        f=Floppy()
-        for (c,opt) in optlist:
-            func=commands[c[2:]]
-            if len(opt)>0:
-                func(f,opt)
+        optlist, _ = getopt.getopt(sys.argv[1:], "", getLongOptions())
+        f = Floppy()
+        for (c, opt) in optlist:
+            func = commands[c[2:]]
+            if len(opt) > 0:
+                func(f, opt)
             else:
                 func(f)
