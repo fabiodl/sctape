@@ -5,6 +5,7 @@ from basparse import getBasicSections
 
 from section import KeyCode
 from util import removeExtension
+from pathlib import Path
 
 
 def writeBasic(filename, d, opt):  # already parsed
@@ -14,11 +15,12 @@ def writeBasic(filename, d, opt):  # already parsed
         if s["type"] == "bytes" and KeyCode.code[s["keycode"]] == KeyCode.BasicData:
             codeChunks.append(s["Program"])
 
+    ext = Path(filename).suffix
     if len(codeChunks) == 1:
-        decode(fname + ".basic", codeChunks[0])
+        decode(fname + ext, codeChunks[0])
     else:
         for idx, c in enumerate(codeChunks):
-            decode(f"{fname}{idx}.basic", c)
+            decode(f"{fname}{idx}{ext}", c)
 
 
 def writeFilename(filename, d, opt):

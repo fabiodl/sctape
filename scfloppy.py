@@ -274,7 +274,7 @@ def canonicalName(name):
 def extract(f, dirname):
     pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
     for fname in f.files:
-        with open(os.path.join(dirname, fname), "wb") as of:
+        with open(os.path.join(dirname, f"{fname}"), "wb") as of:
             of.write(f.getFile(fname))
 
     for c, d in f.getSystem():
