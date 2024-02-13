@@ -118,10 +118,11 @@ class Floppy:
         data = []
         print(f"Found {len(reservedChunks)} IPL chunks")
         for chunk in reservedChunks:
-            print("Chunk size", (chunk[-1]-chunk[0]+1), "K")
-            d = self.getCluster(
-                chunk[0], SECTORSPERCLUSTER*(chunk[-1]-chunk[0]+1))
-            data.append((chunk[0], d))
+            if len(chunk):
+                print("Chunk size", (chunk[-1]-chunk[0]+1), "K")
+                d = self.getCluster(
+                    chunk[0], SECTORSPERCLUSTER*(chunk[-1]-chunk[0]+1))
+                data.append((chunk[0], d))
 
         return data
 
