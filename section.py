@@ -7,12 +7,12 @@ class KeyCode:
     BasicData, MachineData = 0x17, 0x27
     MusicHeader, MusicData = 0x57, 0x58
     name = {
-        BasicHeader: "Basic header",
-        BasicData: "Basic data",
-        MachineHeader: "ML header",
-        MachineData: "ML data",
-        MusicHeader: "Music header",
-        MusicData: "Music data"
+        BasicHeader: "Basic_header",
+        BasicData: "Basic_data",
+        MachineHeader: "ML_header",
+        MachineData: "ML_data",
+        MusicHeader: "Music_header",
+        MusicData: "Music_data"
     }
     code = {v: k for k, v in name.items()}
 
@@ -69,12 +69,14 @@ def parseBytes(si, so):
             checkSum = np.sum(filename+programLength+parity) & 0xFF
             if checkSum != 0:
                 so["fail.checksum"] = checkSum
-                print("*checksum fail")
+                print(
+                    f"*checksum fail {0xFF&(0x100-np.sum(filename+programLength)):02x} vs {parity[0]:02X}")
                 return False
             else:
                 print(
                     f"header checksum ok, prog len {bigEndian(programLength)}")
             so["keycode"] = KeyCode.name[secType]
+
             so["Filename"] = "".join([chr(c) for c in filename])
             so["ProgramLength"] = bigEndian(programLength)
             so["Parity"] = parity
@@ -175,7 +177,7 @@ def printSummary(d, withSilence=True):
                 print(f"length={l}")
 
 
-def listContent(d):
+def listNames(d):
     filenames = []
     for s in d["sections"]:
         if s["type"] == "bytes":

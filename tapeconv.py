@@ -11,7 +11,8 @@ import wavparse
 import tzxparse
 import basicparse
 import seqparse
-from section import parseBytesSections, printSummary, listContent, getSections
+import contentparse
+from section import parseBytesSections, printSummary, listNames, getSections
 
 from util import removeExtension, rhoSweep, rhoSweepMax
 import getopt
@@ -99,7 +100,8 @@ writers = {
     "bit": bitparse.writeBit,
     "bas": basparse.writeBas,
     "wav": wavparse.writeWav,
-    "list": lambda f, d, opt: print(f, listContent(d)),
+    "list": lambda f, d, opt: print(f, listNames(d)),
+    "content": contentparse.listContent,
     "summary": lambda f, d, opt: None,
     "tzx": tzxparse.writeTzx,
     "basic": basicparse.writeBasic,
@@ -107,7 +109,7 @@ writers = {
     "info": printInfo,
     "bitseq": seqparse.writeBitSequence,
     "byteseq": seqparse.writeByteSequence,
-    "filename": basicparse.writeFilename
+    "filename": basicparse.writeFilename,
 }
 
 remrate = 44100
@@ -213,6 +215,8 @@ def convert(filename, outputtype, opts):
     tool["url"] = "https://github.com/fabiodl/sctape"
     tool.setdefault("settings", {})["remaster"] = remaster
 
+    d["info"] = info
+    d["args"] = {"infilename": filename}
     print("Identifying bytes")
     if "pitch" in opts:
         pitch = float(opts["pitch"])
@@ -260,7 +264,7 @@ if __name__ == "__main__":
     ]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:
-        print("Usage ", sys.argv[0], " inputfile outputtype")
+        print("Usage ", sys.argv[0], "[options] inputfile outputtype")
         print("Available options", options)
     else:
         opts = {k[2:]: v for k, v in optlist}
