@@ -22,10 +22,25 @@ FATTRACK = 20
 FATSECTOR = 12
 
 
+ATTRIBUTE_BINARY = 0x00
+ATTRIBUTE_ASCII = 0x01
+ATTRIBUTE_HEX = 0x02
+
+ATTRIBUTE_READONLY = 0x80
+
+
+def trackSectorToCluster(track, sector):
+    sec = track*SECTORSPERTRACK+sector
+    if sec % 4 != 0:
+        raise Exception("Middle of a cluster")
+    return int(sec/4)
+
+
 class Floppy:
 
-    def __init_(self):
+    def __init__(self):
         self.format()
+        self.verbose = True
 
     def open(self, filename):
         self.filename = filename
@@ -63,7 +78,7 @@ class Floppy:
             if fd[0] != 0x00:
                 try:
                     name = fd[:12].decode("utf-8")
-                except:
+                except _:
                     name = tuple(fd[:12])
                 self.files[name] = [int(x) for x in fd[12:14]]
             # print(fd)
@@ -80,11 +95,11 @@ class Floppy:
 
     def getChain(self, start):
         f = self.get(FATTRACK, FATSECTOR, 160)
-        l = [start]
+        chain = [start]
         while f[start] < 160:
             start = f[start]
-            l.append(start)
-        return l, f[start] & 0x0F
+            chain.append(start)
+        return chain, f[start] & 0x0F
 
     def getFreeClusters(self):
         f = self.get(FATTRACK, FATSECTOR, 160)
@@ -110,8 +125,8 @@ class Floppy:
 
         for i in range(int(DIRTRACK*SECTORSPERTRACK/SECTORSPERCLUSTER)):
             if fat[i] == 0xFE:
-                l = reservedChunks[-1]
-                if len(l) > 0 and l[-1] != i-1:
+                li = reservedChunks[-1]
+                if len(li) > 0 and li[-1] != i-1:
                     reservedChunks.append([])
                 reservedChunks[-1].append(i)
 
@@ -132,8 +147,9 @@ class Floppy:
         fs = (FATTRACK*SECTORSPERTRACK+FATSECTOR)*SECTORSIZE
         csize = math.ceil(len(data) / (SECTORSPERCLUSTER*SECTORSIZE))
         self.data[fs+cluster:fs+cluster+csize] = bytes([0xFE]*csize)
-        print("adding system data,", len(data), "bytes",
-              "using", csize, "clusters from cluster", cluster)
+        if self.verbose:
+            print("adding system data,", len(data), "bytes",
+                  "using", csize, "clusters from cluster", cluster)
 
     def getFile(self, name):
         start, _ = self.files[name]
@@ -168,7 +184,7 @@ class Floppy:
                 print("Deleting entry", self.data[es:es+DIRENTRYLEN])
                 self.data[es:es+DIRENTRYLEN] = bytes([0x00]*DIRENTRYLEN)
 
-    def addFile(self, name, d):
+    def addFile(self, name, d, attribute=0x00):
         entry = bytearray([0x00]*DIRENTRYLEN)
         for i in range(12):
             entry[i] = 0x20
@@ -188,7 +204,7 @@ class Floppy:
                 chain.append(c)
             c += 1
         if len(chain) < n:
-            raise Exception("Not enough space to store", filename)
+            raise Exception("Not enough space to store", name)
 
         fp = 0
         SECSIZE = SECTORSPERCLUSTER*SECTORSIZE
@@ -201,19 +217,20 @@ class Floppy:
             fp += SECSIZE
 
         entry[12] = chain[0]
-
+        entry[13] = attribute
         ds = (DIRTRACK*SECTORSPERTRACK+DIRSECTOR)*SECTORSIZE
         entryRec = False
         for f in range(DIRENTRYNUM):
             es = ds+f*DIRENTRYLEN
             if self.data[es] == 0x00:
                 self.data[es:es+DIRENTRYLEN] = entry
-                print("Added entry", entry)
+                if self.verbose:
+                    print("Added entry", entry)
                 entryRec = True
                 break
         if not entryRec:
             raise Exception(
-                "No more directory entries available for", filename)
+                "No more directory entries available for", name)
 
     def deleteUserfiles(self):
         f = self.get(FATTRACK, FATSECTOR, 160)
@@ -221,7 +238,7 @@ class Floppy:
             if val != 0xFE:
                 self.delSector(idx)
         ds = (DIRTRACK*SECTORSPERTRACK+DIRSECTOR)*SECTORSIZE
-        self.data[ds:ds+DIRSECLEN*SECTORSIZE] = bytes([0x00]*12*SECTORSIZE)
+        self.data[ds:ds+12*SECTORSIZE] = bytes([0x00]*12*SECTORSIZE)
 
     def printSummary(self):
         print(self.filename)
@@ -312,7 +329,8 @@ commands = {
 
 
 def getLongOptions():
-    return [c+"=" if len(signature(f).parameters) > 1 else c for (c, f) in commands.items()]
+    return [c+"=" if len(signature(f).parameters) > 1 else c
+            for (c, f) in commands.items()]
 
 
 if __name__ == "__main__":

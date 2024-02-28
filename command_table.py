@@ -105,6 +105,7 @@ COMMAND = {
     "E3": "THEN",
     "E4": "TAB",
     "E5": "SPC",
+    "E7": "OPEN",
     # "F0": "SAVE",
     "F5": "MERGE",
     "F6": "COMSAVE",
