@@ -3,10 +3,7 @@
 
 import binascii
 
-from command_table import COMMAND, FUNCTION
-
-COMMAND_BY_WORD = {v: k for k, v in COMMAND.items()}
-FUNCTION_BY_WORD = {v: k for k, v in FUNCTION.items()}
+from command_table import CommandTable
 
 
 def encode_script_string(script_string, suppress_error=False):
@@ -69,15 +66,15 @@ def encode_command(command):
 
 def match_one_keyword(command):
     matching_commands = list(
-        filter(lambda cmd: command.startswith(cmd), COMMAND_BY_WORD.keys()))
+        filter(lambda cmd: command.startswith(cmd), CommandTable.COMMAND_BY_WORD.keys()))
     matching_functions = list(
-        filter(lambda cmd: command.startswith(cmd), FUNCTION_BY_WORD.keys()))
+        filter(lambda cmd: command.startswith(cmd), CommandTable.FUNCTION_BY_WORD.keys()))
     if matching_commands:
         result = max(matching_commands, key=len)
-        return COMMAND_BY_WORD[result], result, len(result)
+        return CommandTable.COMMAND_BY_WORD[result], result, len(result)
     elif matching_functions:
         result = max(matching_functions, key=len)
-        return "80"+FUNCTION_BY_WORD[result], result, len(result)
+        return "80"+CommandTable.FUNCTION_BY_WORD[result], result, len(result)
     else:
         return "", "", 0
 

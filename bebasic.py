@@ -3,6 +3,8 @@ import argparse
 import sc3000decoder as sc
 from pathlib import Path
 
+CR = "\n"
+
 
 def convertFileContent(inputfile, binary, keepPastEnd):
     errors = 0
@@ -61,7 +63,7 @@ def convertFileContent(inputfile, binary, keepPastEnd):
             print(line, str(e))
             of.extend(bytearray("#"+str(e), "utf-8"))
             errors += 1
-        of.extend(bytearray("\r", "utf-8"))
+        of.extend(bytearray(CR, "utf-8"))
     return of, errors
 
 
@@ -98,19 +100,26 @@ def convertFile(inputfile, outputPath, binary, keepPastEnd):
 
 
 if __name__ == "__main__":
-    parser=argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument("inputfile")
     parser.add_argument("outputfile")
     parser.add_argument("--binary", action="store_true")
     parser.add_argument("--keepPastEnd", action="store_true")
+    parser.add_argument("--floppy", action="store_true")
 
-    args=parser.parse_args()
-    inp=Path(args.inputfile)
+    args = parser.parse_args()
+
+    if args.floppy:
+        sc.CommandTable.set("floppy")
+    else:
+        sc.CommandTable.set("tape")
+
+    inp = Path(args.inputfile)
     if inp.is_file():
         convertFile(args.inputfile, args.outputfile,
                     args.binary, args.keepPastEnd)
     else:
-        files=inp.glob("*")
+        files = inp.glob("*")
         for f in files:
             convertVersionedFile(f, Path(args.outputfile) /
-                                 f.relative_to(inp), args.binary,args.keepPastEnd)
+                                 f.relative_to(inp), args.binary, args.keepPastEnd)

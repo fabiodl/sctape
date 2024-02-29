@@ -307,7 +307,7 @@ def pack(f, dirname):
     for fname in sorted(os.listdir(dirname)):
         if fname[:3] != "IPL":
             d = open(os.path.join(dirname, fname), "rb").read()
-            f.addFile(fname, d)
+            f.addFile(canonicalName(fname), d)
 
 
 def setSystem(f, fname):

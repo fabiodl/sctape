@@ -5,8 +5,7 @@
 Reference:
 http://www43.tok2.com/home/cmpslv/Sc3000/EnrSCbas.htm
 """
-
-from command_table import COMMAND, FUNCTION
+from command_table import CommandTable
 
 
 class UnknownFunctionException(Exception):
@@ -91,7 +90,7 @@ def decode_command(command, line_number, suppress_error=True):
         elif i+j == "80":
             i, j = next(zipper)
             try:
-                current_result = FUNCTION[i+j]
+                current_result = CommandTable.FUNCTION[i+j]
             except KeyError:
                 msg = "Unknown Function {}{} on line {}".format(
                     i, j, line_number)
@@ -102,7 +101,7 @@ def decode_command(command, line_number, suppress_error=True):
                     raise UnknownFunctionException(msg)
         else:
             try:
-                current_result = COMMAND[i+j]
+                current_result = CommandTable.COMMAND[i+j]
             except KeyError:
                 msg = "Unknown Command {}{} on line {}".format(
                     i, j, line_number)
