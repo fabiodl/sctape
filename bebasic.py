@@ -6,7 +6,7 @@ from pathlib import Path
 CR = "\n"
 
 
-def convertFileContent(inputfile, binary, keepPastEnd):
+def convertFileContentTokenized(inputfile, binary, keepPastEnd):
     errors = 0
     of = bytearray()
     if binary:
@@ -67,6 +67,30 @@ def convertFileContent(inputfile, binary, keepPastEnd):
     return of, errors
 
 
+def mergeResult(result):
+    cont = "".join([f'{r["line"]} {r["cmd"]}\n' for r in result["result"]])
+    return cont.encode("utf-8")
+
+
+def convertFileContentSequential(inputfile, binary, includeBin):
+    if binary:
+        hex_string = sc.read_bas_as_hex_string(inputfile)
+    else:
+        raise Exception("sequential mode does not support byteseq")
+
+    result = sc.decode_hex_string(
+        hex_string, suppress_error=True, includeBin=includeBin)
+    return mergeResult(result), result["errors"]
+
+
+def convertFileContent(inputfile, binary, keepPastEnd, sequential, includeBin):
+    if sequential:
+        return convertFileContentSequential(
+            inputfile, binary, includeBin)
+    else:
+        return convertFileContentTokenized(inputfile, binary, keepPastEnd)
+
+
 def outname(outputPath, errors, version):
     if version == 0:
         vs = ""
@@ -79,8 +103,9 @@ def outname(outputPath, errors, version):
     return str(outputPath)+es+vs+".basic"
 
 
-def convertVersionedFile(inputfile, outputPath, binary, keepPastEnd):
-    data, errors = convertFileContent(inputfile, binary, keepPastEnd)
+def convertVersionedFile(inputfile, outputPath, binary, keepPastEnd, sequential, includeBin):
+    data, errors = convertFileContent(
+        inputfile, binary, keepPastEnd, sequential, includeBin)
     version = 0
 
     while Path((ofile := outname(outputPath, errors, version))).exists():
@@ -94,9 +119,10 @@ def convertVersionedFile(inputfile, outputPath, binary, keepPastEnd):
     open(ofile, "wb").write(data)
 
 
-def convertFile(inputfile, outputPath, binary, keepPastEnd):
-    data, errors = convertFileContent(inputfile, binary, keepPastEnd)
-    open(ofile, "wb").write(data)
+def convertFile(inputfile, outputPath, binary, keepPastEnd, sequential, includeBin):
+    data, errors = convertFileContent(
+        inputfile, binary, keepPastEnd, sequential, includeBin)
+    open(outputPath, "wb").write(data)
 
 
 if __name__ == "__main__":
@@ -106,6 +132,8 @@ if __name__ == "__main__":
     parser.add_argument("--binary", action="store_true")
     parser.add_argument("--keepPastEnd", action="store_true")
     parser.add_argument("--floppy", action="store_true")
+    parser.add_argument("--sequential", action="store_true")
+    parser.add_argument("--includeBin", action="store_true")
 
     args = parser.parse_args()
 
@@ -117,9 +145,9 @@ if __name__ == "__main__":
     inp = Path(args.inputfile)
     if inp.is_file():
         convertFile(args.inputfile, args.outputfile,
-                    args.binary, args.keepPastEnd)
+                    args.binary, args.keepPastEnd, args.sequential, args.includeBin)
     else:
         files = inp.glob("*")
         for f in files:
             convertVersionedFile(f, Path(args.outputfile) /
-                                 f.relative_to(inp), args.binary, args.keepPastEnd)
+                                 f.relative_to(inp), args.binary, args.keepPastEnd, args.sequential, args.includeBin)

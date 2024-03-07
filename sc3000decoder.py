@@ -33,14 +33,14 @@ def print_decoded(decoded, pretty_format=True):
         print(print_format.format(line["byte"], line["line"], line["cmd"]))
 
 
-def decode_hex_string(hex_string, suppress_error=True):
-    result = {"raw": hex_string, "result": []}
+def decode_hex_string(hex_string, suppress_error=True, terminator="0000", includeBin=True):
+    result = {"raw": hex_string, "result": [], "errors": 0}
     i = 0
     while i < len(hex_string):
         result_i = {"byte": i, "line": "", "cmd": "", "raw": ""}
-        if hex_string[i:i+4] == "0000":
-            bind = hex_string[i+4:]
-            if len(bind) > 0:
+        if hex_string[i:i+len(terminator)] == terminator:
+            bin_data = hex_string[i+4:]
+            if includeBin and len(bin_data) > 0:
                 result_i["cmd"] = f"\\bin " + hex_string[i:]
                 di = len(hex_string) - i
             else:
@@ -59,8 +59,9 @@ def decode_hex_string(hex_string, suppress_error=True):
                 break
         else:
             return result
-
         i += di
+        if hex_string[i-2:i] != "0D":
+            result["errors"] += 1
         result["result"].append(result_i)
     return result
 
