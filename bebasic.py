@@ -67,8 +67,13 @@ def convertFileContentTokenized(inputfile, binary, keepPastEnd):
     return of, errors
 
 
+def errorString(r):
+    return r"\err " if r["error"] else ""
+
+
 def mergeResult(result):
-    cont = "".join([f'{r["line"]} {r["cmd"]}\n' for r in result["result"]])
+    cont = "".join(
+        [f'{errorString(r)}{r["line"]} {r["cmd"]}\n' for r in result["result"]])
     return cont.encode("utf-8")
 
 
@@ -79,7 +84,7 @@ def convertFileContentSequential(inputfile, binary, includeBin):
         raise Exception("sequential mode does not support byteseq")
 
     result = sc.decode_hex_string(
-        hex_string, suppress_error=True, includeBin=includeBin)
+        hex_string, suppress_error=True, includeBin=includeBin, terminator="00")
     return mergeResult(result), result["errors"]
 
 
@@ -106,6 +111,8 @@ def outname(outputPath, errors, version):
 def convertVersionedFile(inputfile, outputPath, binary, keepPastEnd, sequential, includeBin):
     data, errors = convertFileContent(
         inputfile, binary, keepPastEnd, sequential, includeBin)
+    if len(data) == 0:
+        return
     version = 0
 
     while Path((ofile := outname(outputPath, errors, version))).exists():

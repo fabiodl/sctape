@@ -37,7 +37,8 @@ def decode_hex_string(hex_string, suppress_error=True, terminator="0000", includ
     result = {"raw": hex_string, "result": [], "errors": 0}
     i = 0
     while i < len(hex_string):
-        result_i = {"byte": i, "line": "", "cmd": "", "raw": ""}
+        result_i = {"byte": i, "line": "",
+                    "cmd": "", "raw": "", "error": False}
         if hex_string[i:i+len(terminator)] == terminator:
             bin_data = hex_string[i+4:]
             if includeBin and len(bin_data) > 0:
@@ -57,10 +58,14 @@ def decode_hex_string(hex_string, suppress_error=True, terminator="0000", includ
             except UnknownCommandException as e:
                 print("Error: {}".format(e))
                 break
+            except StopIteration:
+                print("no data after 0x80")
+                break
         else:
             return result
         i += di
         if hex_string[i-2:i] != "0D":
+            result_i["error"] = True
             result["errors"] += 1
         result["result"].append(result_i)
     return result
