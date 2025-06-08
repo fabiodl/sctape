@@ -5,7 +5,7 @@ import floppy_command_table
 class CommandTable:
 
     def set(tableType):
-        print("using table ", tableType)
+        print("using table", tableType)
         if tableType == "tape":
             CommandTable.COMMAND = tape_command_table.COMMAND
             CommandTable.FUNCTION = tape_command_table.FUNCTION

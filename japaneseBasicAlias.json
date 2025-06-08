@@ -1,0 +1,7 @@
+{    
+    "ED":{"escape":"\\year","unicode":"年"},
+    "EE":{"escape":"\\month","unicode":"月"},
+    "EF":{"escape":"\\day","unicode":"日"},    
+    "FD":{"escape":"\\stickFigure","unicode":"🯅"},
+    "FE":{"escape":"\\division","unicode":"÷"}
+}

@@ -1,4 +1,5 @@
-from sc3000decoder import read_bas_as_hex_string, decode_hex_string, print_decoded, save_decoded_to, escape_char
+from sc3000decoder import read_bas_as_hex_string, decode_hex_string
+from sc3000decoder import print_decoded, save_decoded_to, escape_char
 from sc3000encoder import encode_script_string
 import binascii
 from basparse import getBasicSections

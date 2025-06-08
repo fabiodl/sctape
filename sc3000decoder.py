@@ -6,6 +6,7 @@ Reference:
 http://www43.tok2.com/home/cmpslv/Sc3000/EnrSCbas.htm
 """
 from command_table import CommandTable
+from basic_alias_table import basic_alias_table
 
 
 class UnknownFunctionException(Exception):
@@ -136,8 +137,7 @@ def decode_command(command, line_number, suppress_error=True):
 def escape_char(ch, toPass=[]):
     if ch in toPass or 0x20 <= ch <= 0x7E and ch != "\\":
         return chr(ch)
-    else:
-        return f"\\x{ch:02X}"
+    return basic_alias_table.decode(ch)
 
 
 def decode_ascii(byte):

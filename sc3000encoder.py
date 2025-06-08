@@ -4,6 +4,7 @@
 import binascii
 
 from command_table import CommandTable
+from basic_alias_table import basic_alias_table
 
 
 def encode_script_string(script_string, suppress_error=False):
@@ -80,10 +81,8 @@ def match_one_keyword(command):
 
 
 def encode_one_ascii(command):
-    if command[0] == '\\' and command[1] == 'x':
-        return command[2]+command[3], command[0:4], 4
-    else:
-        return f"{ord(command[0]):02x}", command[0], 1
+    r = basic_alias_table.encode(command)
+    return r
 
 
 def encode_command_length(encoded_command):

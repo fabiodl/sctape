@@ -32,6 +32,13 @@ All tzx files to remastered wav
 python3 tapeconv.py "*.tzx" wav
 ```
 
+Convert wav file to basic file using assuming the tape is for the export basic, replacing non standard chars by unicode
+
+```bash
+python3 tapeconv.py --mode=absolute --basic_alias_table="export" --basic_alias_decoding=unicode tape.wav basic
+```
+
+
 ### Floppy
 ```bash
 python3 floppy.py --operation1[=val] --operation2[=val] ... --operationN[=val]

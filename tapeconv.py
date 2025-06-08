@@ -20,8 +20,10 @@ from pathlib import Path
 import hashlib
 import json
 import traceback
+from basic_alias_table import basic_alias_table
 
-version = "0.01"
+
+version = "0.02"
 
 
 # levels are referred to max value, lperiod in seconds
@@ -260,7 +262,7 @@ if __name__ == "__main__":
         "output_filename_8.3", "input_type=", "program_name=", "program_type=",
         "program_start_addr=", "program_from=", "program_to=", "program_size=",
         "program_rstrip=", "search_precision=", "newline_on=", "resample=", "suffix=",
-        "split_on_header", "basic_raw_encoding"
+        "split_on_header", "basic_raw_encoding", "basic_alias_table=", "basic_alias_decoding="
     ]
     optlist, args = getopt.getopt(sys.argv[1:], "", options)
     if len(args) < 2:
@@ -281,6 +283,18 @@ if __name__ == "__main__":
                 print(f"No such input file[s]: '{args[0]}'", )
         ok = []
         bad = []
+
+        if "basic_alias_table" in opts:
+            ba_tbl = opts["basic_alias_table"]
+        else:
+            ba_tbl = "export"
+        if "basic_alias_decoding" in opts:
+            ba_dec = opts["basic_alias_decoding"]
+        else:
+            ba_dec = "escape"
+
+        basic_alias_table.load(ba_tbl, ba_dec)
+
         for filename in files:
             try:
                 print("converting", filename)
