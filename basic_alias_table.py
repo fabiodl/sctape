@@ -22,27 +22,24 @@ class BasicAliasTable:
                 self.table = json.load(f)
                 self.revtable = {ve: k for k, vl in self.table.items()
                                  for vk, ve in vl.items()}
+                self.deckeys = sorted(
+                    self.revtable.keys(), key=len, reverse=True)
             # print("revtable", self.revtable)
 
     def decode(self, ch):
         h = f"{ch:02X}"
         if h in self.table and self.decoding in self.table[h]:
             dec = self.table[h][self.decoding]
-            if dec[0] == "\\":
-                dec += " "
             return dec
 
         return f"\\x{ch:02X}"
 
     def encode(self, command):
-        if command[0] in self.revtable:
-            uc = command[0]
-            return self.revtable[uc], uc, 1
-        tok = command.split(" ")
-        if len(tok) > 0:
-            cmd = tok[0]
-            if cmd in self.revtable:
-                return self.revtable[cmd], cmd, len(cmd)
+        for k in self.deckeys:
+            kl = len(k)
+            if command[:kl] == k:
+                return self.revtable[k], k, kl
+
         if command[0] == "\\" and command[1] == "x":
             return command[2]+command[3], command[0:4], 4
 
