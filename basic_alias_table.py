@@ -8,6 +8,7 @@ class BasicAliasTable:
         self.table = {}
         self.revtable = {}
         self.decoding = None
+        self.deckeys = []
 
     def load(self, fname, decoding):
         self.decoding = decoding
