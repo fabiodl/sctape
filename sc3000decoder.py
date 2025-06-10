@@ -146,7 +146,7 @@ def decode_ascii(byte):
 
 
 def save_decoded_to(filepath, decoded):
-    with open(filepath, "w") as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         for line in decoded["result"]:
             f.write("{1} {2}\n".format(
                 line["byte"], line["line"], line["cmd"]))
