@@ -100,7 +100,7 @@ def print_encoded(encoded, pretty_format=False):
 
 
 def save_encoded_to(filepath, encoded):
-    with open(filepath, "wb") as f:
+    with open(filepath, "wb", encoding="utf-8") as f:
         result = ""
         for line in encoded:
             result += line["encoded"]
