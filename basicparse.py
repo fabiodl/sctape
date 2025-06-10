@@ -31,10 +31,10 @@ def writeFilename(filename, d, opt):
         if s["type"] == "bytes" and KeyCode.code[s["keycode"]] == KeyCode.BasicHeader:
             names.append(s["Filename"])
     if len(names) == 1:
-        open(fname + ".filename", "w").write(names[0])
+        open(fname + ".filename", "w", encoding="utf-8").write(names[0])
     else:
         for idx, na in enumerate(names):
-            open(f"{fname}{idx}.filename", "w").write(na)
+            open(f"{fname}{idx}.filename", "w", encoding="utf-8").write(na)
 
 
 def readBasic(filename, opts):
@@ -44,7 +44,7 @@ def readBasic(filename, opts):
         script_string = "".join([escape_char(ch, toPass=[0x0A])
                                  for ch in raw if ch not in [0x01, 0x0D]])
     else:
-        script_string = open(filename).read()
+        script_string = open(filename, encoding="utf-8").read()
     suppress_error = False
     encoded = encode_script_string(script_string, suppress_error)
     result = ""
