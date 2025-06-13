@@ -32,7 +32,8 @@ class BasicAliasTable:
         if h in self.table and self.decoding in self.table[h]:
             dec = self.table[h][self.decoding]
             return dec
-
+        if self.decoding == "decimal":
+            return f"\\d{ch:03d}"
         return f"\\x{ch:02X}"
 
     def encode(self, command):
@@ -43,6 +44,10 @@ class BasicAliasTable:
 
         if command[0] == "\\" and command[1] == "x":
             return command[2]+command[3], command[0:4], 4
+
+        if command[0] == "\\" and command[1] == "d":
+            n = int(command[2:5])
+            return f"{n:02X}", command[0:5], 5
 
         return f"{ord(command[0]):02x}", command[0], 1
 

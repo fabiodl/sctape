@@ -1,7 +1,506 @@
-{    
-    "ED":{"escape":"\\year","unicode":"年"},
-    "EE":{"escape":"\\month","unicode":"月"},
-    "EF":{"escape":"\\day","unicode":"日"},    
-    "FD":{"escape":"\\stickFigure","unicode":"🯅"},
-    "FE":{"escape":"\\division","unicode":"÷"}
+{
+    "80": {
+        "unicode": "│",
+        "unicodeName": "\\boxDrawingsLightVertical"
+    },
+    "81": {
+        "unicode": "─",
+        "unicodeName": "\\boxDrawingsLightHorizontal"
+    },
+    "82": {
+        "unicode": "┴",
+        "unicodeName": "\\boxDrawingsLightUpAndHorizontal"
+    },
+    "83": {
+        "unicode": "┬",
+        "unicodeName": "\\boxDrawingsLightDownAndHorizontal"
+    },
+    "84": {
+        "unicode": "┤",
+        "unicodeName": "\\boxDrawingsLightVerticalAndLeft"
+    },
+    "85": {
+        "unicode": "├",
+        "unicodeName": "\\boxDrawingsLightVerticalAndRight"
+    },
+    "86": {
+        "unicode": "┌",
+        "unicodeName": "\\boxDrawingsLightDownAndRight"
+    },
+    "87": {
+        "unicode": "└",
+        "unicodeName": "\\boxDrawingsLightUpAndRight"
+    },
+    "88": {
+        "unicode": "┐",
+        "unicodeName": "\\boxDrawingsLightDownAndLeft"
+    },
+    "89": {
+        "unicode": "┘",
+        "unicodeName": "\\boxDrawingsLightUpAndLeft"
+    },
+    "8A": {
+        "unicode": "╭",
+        "unicodeName": "\\boxDrawingsLightArcDownAndRight"
+    },
+    "8B": {
+        "unicode": "╰",
+        "unicodeName": "\\boxDrawingsLightArcUpAndRight"
+    },
+    "8C": {
+        "unicode": "╮",
+        "unicodeName": "\\boxDrawingsLightArcDownAndLeft"
+    },
+    "8D": {
+        "unicode": "╯",
+        "unicodeName": "\\boxDrawingsLightArcUpAndLeft"
+    },
+    "8E": {
+        "unicode": "↑",
+        "unicodeName": "\\upwardsArrow"
+    },
+    "8F": {
+        "unicode": "←",
+        "unicodeName": "\\leftwardsArrow"
+    },
+    "90": {
+        "unicode": "▒",
+        "unicodeName": "\\mediumShade"
+    },
+    "91": {
+        "unicode": "╳",
+        "unicodeName": "\\boxDrawingsLightDiagonalCross"
+    },
+    "92": {
+        "unicode": "┼",
+        "unicodeName": "\\boxDrawingsLightVerticalAndHorizontal"
+    },
+    "93": {
+        "unicode": "╱",
+        "unicodeName": "\\boxDrawingsLightDiagonalUpperRightToLowerLeft"
+    },
+    "94": {
+        "unicode": "╲",
+        "unicodeName": "\\boxDrawingsLightDiagonalUpperLeftToLowerRight"
+    },
+    "95": {
+        "unicode": "◢",
+        "unicodeName": "\\blackLowerRightTriangle"
+    },
+    "96": {
+        "unicode": "◣",
+        "unicodeName": "\\blackLowerLeftTriangle"
+    },
+    "97": {
+        "unicode": "◥",
+        "unicodeName": "\\blackUpperRightTriangle"
+    },
+    "98": {
+        "unicode": "◤",
+        "unicodeName": "\\blackUpperLeftTriangle"
+    },
+    "99": {
+        "unicode": "▁",
+        "unicodeName": "\\lowerOneEighthBlock"
+    },
+    "9A": {
+        "unicode": "▂",
+        "unicodeName": "\\lowerOneQuarterBlock"
+    },
+    "9B": {
+        "unicode": "▄",
+        "unicodeName": "\\lowerHalfBlock"
+    },
+    "9C": {
+        "unicode": "▀",
+        "unicodeName": "\\upperHalfBlock"
+    },
+    "9D": {
+        "unicode": "🮂",
+        "unicodeName": "\\upperOneQuarterBlock"
+    },
+    "9E": {
+        "unicode": "▔",
+        "unicodeName": "\\upperOneEighthBlock"
+    },
+    "9F": {
+        "unicode": "▏",
+        "unicodeName": "\\leftOneEighthBlock"
+    },
+    "A1": {
+        "unicode": "。",
+        "unicodeName": "\\ideographicFullStop"
+    },
+    "A2": {
+        "unicode": "「",
+        "unicodeName": "\\leftCornerBracket"
+    },
+    "A3": {
+        "unicode": "」",
+        "unicodeName": "\\rightCornerBracket"
+    },
+    "A4": {
+        "unicode": "、",
+        "unicodeName": "\\ideographicComma"
+    },
+    "A5": {
+        "unicode": "・",
+        "unicodeName": "\\katakanaMiddleDot"
+    },
+    "A6": {
+        "unicode": "ヲ",
+        "unicodeName": "\\katakanaLetterWo"
+    },
+    "A7": {
+        "unicode": "ァ",
+        "unicodeName": "\\katakanaLetterSmallA"
+    },
+    "A8": {
+        "unicode": "ィ",
+        "unicodeName": "\\katakanaLetterSmallI"
+    },
+    "A9": {
+        "unicode": "ゥ",
+        "unicodeName": "\\katakanaLetterSmallU"
+    },
+    "AA": {
+        "unicode": "ェ",
+        "unicodeName": "\\katakanaLetterSmallE"
+    },
+    "AB": {
+        "unicode": "ォ",
+        "unicodeName": "\\katakanaLetterSmallO"
+    },
+    "AC": {
+        "unicode": "ャ",
+        "unicodeName": "\\katakanaLetterSmallYa"
+    },
+    "AD": {
+        "unicode": "ュ",
+        "unicodeName": "\\katakanaLetterSmallYu"
+    },
+    "AE": {
+        "unicode": "ョ",
+        "unicodeName": "\\katakanaLetterSmallYo"
+    },
+    "AF": {
+        "unicode": "ッ",
+        "unicodeName": "\\katakanaLetterSmallTu"
+    },
+    "B0": {
+        "unicode": "ー",
+        "unicodeName": "\\katakanaHiraganaProlongedSoundMark"
+    },
+    "B1": {
+        "unicode": "ア",
+        "unicodeName": "\\katakanaLetterA"
+    },
+    "B2": {
+        "unicode": "イ",
+        "unicodeName": "\\katakanaLetterI"
+    },
+    "B3": {
+        "unicode": "ウ",
+        "unicodeName": "\\katakanaLetterU"
+    },
+    "B4": {
+        "unicode": "エ",
+        "unicodeName": "\\katakanaLetterE"
+    },
+    "B5": {
+        "unicode": "オ",
+        "unicodeName": "\\katakanaLetterO"
+    },
+    "B6": {
+        "unicode": "カ",
+        "unicodeName": "\\katakanaLetterKa"
+    },
+    "B7": {
+        "unicode": "キ",
+        "unicodeName": "\\katakanaLetterKi"
+    },
+    "B8": {
+        "unicode": "ク",
+        "unicodeName": "\\katakanaLetterKu"
+    },
+    "B9": {
+        "unicode": "ケ",
+        "unicodeName": "\\katakanaLetterKe"
+    },
+    "BA": {
+        "unicode": "コ",
+        "unicodeName": "\\katakanaLetterKo"
+    },
+    "BB": {
+        "unicode": "サ",
+        "unicodeName": "\\katakanaLetterSa"
+    },
+    "BC": {
+        "unicode": "シ",
+        "unicodeName": "\\katakanaLetterSi"
+    },
+    "BD": {
+        "unicode": "ス",
+        "unicodeName": "\\katakanaLetterSu"
+    },
+    "BE": {
+        "unicode": "セ",
+        "unicodeName": "\\katakanaLetterSe"
+    },
+    "BF": {
+        "unicode": "ソ",
+        "unicodeName": "\\katakanaLetterSo"
+    },
+    "C0": {
+        "unicode": "タ",
+        "unicodeName": "\\katakanaLetterTa"
+    },
+    "C1": {
+        "unicode": "チ",
+        "unicodeName": "\\katakanaLetterTi"
+    },
+    "C2": {
+        "unicode": "チ",
+        "unicodeName": "\\katakanaLetterTi"
+    },
+    "C3": {
+        "unicode": "テ",
+        "unicodeName": "\\katakanaLetterTe"
+    },
+    "C4": {
+        "unicode": "ト",
+        "unicodeName": "\\katakanaLetterTo"
+    },
+    "C5": {
+        "unicode": "ナ",
+        "unicodeName": "\\katakanaLetterNa"
+    },
+    "C6": {
+        "unicode": "ニ",
+        "unicodeName": "\\katakanaLetterNi"
+    },
+    "C7": {
+        "unicode": "ヌ",
+        "unicodeName": "\\katakanaLetterNu"
+    },
+    "C8": {
+        "unicode": "ネ",
+        "unicodeName": "\\katakanaLetterNe"
+    },
+    "C9": {
+        "unicode": "ノ",
+        "unicodeName": "\\katakanaLetterNo"
+    },
+    "CA": {
+        "unicode": "ハ",
+        "unicodeName": "\\katakanaLetterHa"
+    },
+    "CB": {
+        "unicode": "ヒ",
+        "unicodeName": "\\katakanaLetterHi"
+    },
+    "CC": {
+        "unicode": "フ",
+        "unicodeName": "\\katakanaLetterHu"
+    },
+    "CD": {
+        "unicode": "ヘ",
+        "unicodeName": "\\katakanaLetterHe"
+    },
+    "CE": {
+        "unicode": "ホ",
+        "unicodeName": "\\katakanaLetterHo"
+    },
+    "CF": {
+        "unicode": "マ",
+        "unicodeName": "\\katakanaLetterMa"
+    },
+    "D0": {
+        "unicode": "ミ",
+        "unicodeName": "\\katakanaLetterMi"
+    },
+    "D1": {
+        "unicode": "ム",
+        "unicodeName": "\\katakanaLetterMu"
+    },
+    "D2": {
+        "unicode": "メ",
+        "unicodeName": "\\katakanaLetterMe"
+    },
+    "D3": {
+        "unicode": "モ",
+        "unicodeName": "\\katakanaLetterMo"
+    },
+    "D4": {
+        "unicode": "ヤ",
+        "unicodeName": "\\katakanaLetterYa"
+    },
+    "D5": {
+        "unicode": "ユ",
+        "unicodeName": "\\katakanaLetterYu"
+    },
+    "D6": {
+        "unicode": "ヨ",
+        "unicodeName": "\\katakanaLetterYo"
+    },
+    "D7": {
+        "unicode": "ラ",
+        "unicodeName": "\\katakanaLetterRa"
+    },
+    "D8": {
+        "unicode": "リ",
+        "unicodeName": "\\katakanaLetterRi"
+    },
+    "D9": {
+        "unicode": "ル",
+        "unicodeName": "\\katakanaLetterRu"
+    },
+    "DA": {
+        "unicode": "レ",
+        "unicodeName": "\\katakanaLetterRe"
+    },
+    "DB": {
+        "unicode": "ロ",
+        "unicodeName": "\\katakanaLetterRo"
+    },
+    "DC": {
+        "unicode": "ワ",
+        "unicodeName": "\\katakanaLetterWa"
+    },
+    "DD": {
+        "unicode": "ン",
+        "unicodeName": "\\katakanaLetterN"
+    },
+    "DE": {
+        "unicode": "゛",
+        "unicodeName": "\\katakanaHiraganaVoicedSoundMark"
+    },
+    "DF": {
+        "unicode": "゜",
+        "unicodeName": "\\katakanaHiraganaSemiVoicedSoundMark"
+    },
+    "E0": {
+        "unicode": "▎",
+        "unicodeName": "\\leftOneQuarterBlock"
+    },
+    "E1": {
+        "unicode": "▌",
+        "unicodeName": "\\leftHalfBlock"
+    },
+    "E2": {
+        "unicode": "▐",
+        "unicodeName": "\\rightHalfBlock"
+    },
+    "E3": {
+        "unicode": "🮇",
+        "unicodeName": "\\rightOneQuarterBlock"
+    },
+    "E4": {
+        "unicode": "▕",
+        "unicodeName": "\\rightOneEighthBlock"
+    },
+    "E5": {
+        "unicode": "█",
+        "unicodeName": "\\fullBlock"
+    },
+    "E6": {
+        "unicode": "𜸩",
+        "unicodeName": "\\largeTypePieceStem"
+    },
+    "E7": {
+        "unicode": "𜸟",
+        "unicodeName": "\\largeTypePieceCrossbar"
+    },
+    "E8": {
+        "unicode": "𜲐",
+        "unicodeName": "\\verticalLineWithFourTickMarks"
+    },
+    "E9": {
+        "unicode": "𜲑",
+        "unicodeName": "\\horizontalLineWithFourTickMarks"
+    },
+    "EA": {
+        "unicode": "▞",
+        "unicodeName": "\\quadrantUpperRightAndLowerLeft"
+    },
+    "EB": {
+        "unicode": "○",
+        "unicodeName": "\\whiteCircle"
+    },
+    "EC": {
+        "unicode": "●",
+        "unicodeName": "\\blackCircle"
+    },
+    "ED": {
+        "unicode": "年",
+        "unicodeName": "\\cjkUnifiedIdeograph5e74"
+    },
+    "EE": {
+        "unicode": "月",
+        "unicodeName": "\\cjkUnifiedIdeograph6708"
+    },
+    "EF": {
+        "unicode": "日",
+        "unicodeName": "\\cjkUnifiedIdeograph65e5"
+    },
+    "F0": {
+        "unicode": "火",
+        "unicodeName": "\\cjkUnifiedIdeograph706b"
+    },
+    "F1": {
+        "unicode": "水",
+        "unicodeName": "\\cjkUnifiedIdeograph6c34"
+    },
+    "F2": {
+        "unicode": "木",
+        "unicodeName": "\\cjkUnifiedIdeograph6728"
+    },
+    "F3": {
+        "unicode": "金",
+        "unicodeName": "\\cjkUnifiedIdeograph91d1"
+    },
+    "F4": {
+        "unicode": "土",
+        "unicodeName": "\\cjkUnifiedIdeograph571f"
+    },
+    "F5": {
+        "unicode": "♠",
+        "unicodeName": "\\blackSpadeSuit"
+    },
+    "F6": {
+        "unicode": "♥",
+        "unicodeName": "\\blackHeartSuit"
+    },
+    "F7": {
+        "unicode": "♦",
+        "unicodeName": "\\blackDiamondSuit"
+    },
+    "F8": {
+        "unicode": "♣",
+        "unicodeName": "\\blackClubSuit"
+    },
+    "F9": {
+        "unicode": "𜱯",
+        "unicodeName": "\\blackNeutralFace"
+    },
+    "FA": {
+        "unicode": "𜱏",
+        "unicodeName": "\\alienSquidClosedTentacles"
+    },
+    "FB": {
+        "unicode": "𜲝",
+        "unicodeName": "\\verticalGoKart"
+    },
+    "FC": {
+        "unicode": "𜲛",
+        "unicodeName": "\\horizontalRacingCar"
+    },
+    "FD": {
+        "unicode": "🯅",
+        "unicodeName": "\\stickFigure"
+    },
+    "FE": {
+        "unicode": "÷",
+        "unicodeName": "\\divisionSign"
+    }
 }

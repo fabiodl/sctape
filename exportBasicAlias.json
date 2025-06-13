@@ -1,4 +1,410 @@
-{    
-    "FD":{"escape":"\\stickFigure","unicode":"🯅"},
-    "FE":{"escape":"\\division","unicode":"÷"}
+{
+    "80": {
+        "unicode": "│",
+        "unicodeName": "\\boxDrawingsLightVertical"
+    },
+    "81": {
+        "unicode": "─",
+        "unicodeName": "\\boxDrawingsLightHorizontal"
+    },
+    "82": {
+        "unicode": "┴",
+        "unicodeName": "\\boxDrawingsLightUpAndHorizontal"
+    },
+    "83": {
+        "unicode": "┬",
+        "unicodeName": "\\boxDrawingsLightDownAndHorizontal"
+    },
+    "84": {
+        "unicode": "┤",
+        "unicodeName": "\\boxDrawingsLightVerticalAndLeft"
+    },
+    "85": {
+        "unicode": "├",
+        "unicodeName": "\\boxDrawingsLightVerticalAndRight"
+    },
+    "86": {
+        "unicode": "┌",
+        "unicodeName": "\\boxDrawingsLightDownAndRight"
+    },
+    "87": {
+        "unicode": "└",
+        "unicodeName": "\\boxDrawingsLightUpAndRight"
+    },
+    "88": {
+        "unicode": "┐",
+        "unicodeName": "\\boxDrawingsLightDownAndLeft"
+    },
+    "89": {
+        "unicode": "┘",
+        "unicodeName": "\\boxDrawingsLightUpAndLeft"
+    },
+    "8A": {
+        "unicode": "╭",
+        "unicodeName": "\\boxDrawingsLightArcDownAndRight"
+    },
+    "8B": {
+        "unicode": "╰",
+        "unicodeName": "\\boxDrawingsLightArcUpAndRight"
+    },
+    "8C": {
+        "unicode": "╮",
+        "unicodeName": "\\boxDrawingsLightArcDownAndLeft"
+    },
+    "8D": {
+        "unicode": "╯",
+        "unicodeName": "\\boxDrawingsLightArcUpAndLeft"
+    },
+    "8E": {
+        "unicode": "↑",
+        "unicodeName": "\\upwardsArrow"
+    },
+    "8F": {
+        "unicode": "←",
+        "unicodeName": "\\leftwardsArrow"
+    },
+    "90": {
+        "unicode": "▒",
+        "unicodeName": "\\mediumShade"
+    },
+    "91": {
+        "unicode": "╳",
+        "unicodeName": "\\boxDrawingsLightDiagonalCross"
+    },
+    "92": {
+        "unicode": "┼",
+        "unicodeName": "\\boxDrawingsLightVerticalAndHorizontal"
+    },
+    "93": {
+        "unicode": "╱",
+        "unicodeName": "\\boxDrawingsLightDiagonalUpperRightToLowerLeft"
+    },
+    "94": {
+        "unicode": "╲",
+        "unicodeName": "\\boxDrawingsLightDiagonalUpperLeftToLowerRight"
+    },
+    "95": {
+        "unicode": "◢",
+        "unicodeName": "\\blackLowerRightTriangle"
+    },
+    "96": {
+        "unicode": "◣",
+        "unicodeName": "\\blackLowerLeftTriangle"
+    },
+    "97": {
+        "unicode": "◥",
+        "unicodeName": "\\blackUpperRightTriangle"
+    },
+    "98": {
+        "unicode": "◤",
+        "unicodeName": "\\blackUpperLeftTriangle"
+    },
+    "99": {
+        "unicode": "▁",
+        "unicodeName": "\\lowerOneEighthBlock"
+    },
+    "9A": {
+        "unicode": "▂",
+        "unicodeName": "\\lowerOneQuarterBlock"
+    },
+    "9B": {
+        "unicode": "▄",
+        "unicodeName": "\\lowerHalfBlock"
+    },
+    "9C": {
+        "unicode": "▀",
+        "unicodeName": "\\upperHalfBlock"
+    },
+    "9D": {
+        "unicode": "🮂",
+        "unicodeName": "\\upperOneQuarterBlock"
+    },
+    "9E": {
+        "unicode": "▔",
+        "unicodeName": "\\upperOneEighthBlock"
+    },
+    "9F": {
+        "unicode": "▏",
+        "unicodeName": "\\leftOneEighthBlock"
+    },
+    "A0": {
+        "unicode": "Â",
+        "unicodeName": "\\latinCapitalLetterAWithCircumflex"
+    },
+    "A1": {
+        "unicode": "Ǎ",
+        "unicodeName": "\\latinCapitalLetterAWithCaron"
+    },
+    "A2": {
+        "unicode": "Á",
+        "unicodeName": "\\latinCapitalLetterAWithAcute"
+    },
+    "A3": {
+        "unicode": "À",
+        "unicodeName": "\\latinCapitalLetterAWithGrave"
+    },
+    "A4": {
+        "unicode": "Ä",
+        "unicodeName": "\\latinCapitalLetterAWithDiaeresis"
+    },
+    "A5": {
+        "unicode": "Å",
+        "unicodeName": "\\latinCapitalLetterAWithRingAbove"
+    },
+    "A6": {
+        "unicode": "Ã",
+        "unicodeName": "\\latinCapitalLetterAWithTilde"
+    },
+    "A7": {
+        "unicode": "Ā",
+        "unicodeName": "\\latinCapitalLetterAWithMacron"
+    },
+    "A8": {
+        "unicode": "Ê",
+        "unicodeName": "\\latinCapitalLetterEWithCircumflex"
+    },
+    "A9": {
+        "unicode": "Ě",
+        "unicodeName": "\\latinCapitalLetterEWithCaron"
+    },
+    "AA": {
+        "unicode": "Ë",
+        "unicodeName": "\\latinCapitalLetterEWithDiaeresis"
+    },
+    "AB": {
+        "unicode": "Ē",
+        "unicodeName": "\\latinCapitalLetterEWithMacron"
+    },
+    "AC": {
+        "unicode": "É",
+        "unicodeName": "\\latinCapitalLetterEWithAcute"
+    },
+    "AD": {
+        "unicode": "È",
+        "unicodeName": "\\latinCapitalLetterEWithGrave"
+    },
+    "AE": {
+        "unicode": "Ñ",
+        "unicodeName": "\\latinCapitalLetterNWithTilde"
+    },
+    "AF": {
+        "unicode": "N̂",
+        "unicodeName": "\\latinCapitalLetterNCombiningCircumflexAccent"
+    },
+    "B0": {
+        "unicode": "Ǐ",
+        "unicodeName": "\\latinCapitalLetterIWithCaron"
+    },
+    "B1": {
+        "unicode": "Ì",
+        "unicodeName": "\\latinCapitalLetterIWithGrave"
+    },
+    "B2": {
+        "unicode": "Í",
+        "unicodeName": "\\latinCapitalLetterIWithAcute"
+    },
+    "B3": {
+        "unicode": "Ï",
+        "unicodeName": "\\latinCapitalLetterIWithDiaeresis"
+    },
+    "B4": {
+        "unicode": "Î",
+        "unicodeName": "\\latinCapitalLetterIWithCircumflex"
+    },
+    "B5": {
+        "unicode": "Ī",
+        "unicodeName": "\\latinCapitalLetterIWithMacron"
+    },
+    "B6": {
+        "unicode": "Ô",
+        "unicodeName": "\\latinCapitalLetterOWithCircumflex"
+    },
+    "B7": {
+        "unicode": "Ǒ",
+        "unicodeName": "\\latinCapitalLetterOWithCaron"
+    },
+    "B8": {
+        "unicode": "O̧",
+        "unicodeName": "\\latinCapitalLetterOCombiningCedilla"
+    },
+    "B9": {
+        "unicode": "Ó",
+        "unicodeName": "\\latinCapitalLetterOWithAcute"
+    },
+    "BA": {
+        "unicode": "Ò",
+        "unicodeName": "\\latinCapitalLetterOWithGrave"
+    },
+    "BB": {
+        "unicode": "Ö",
+        "unicodeName": "\\latinCapitalLetterOWithDiaeresis"
+    },
+    "BC": {
+        "unicode": "Õ",
+        "unicodeName": "\\latinCapitalLetterOWithTilde"
+    },
+    "BD": {
+        "unicode": "Û",
+        "unicodeName": "\\latinCapitalLetterUWithCircumflex"
+    },
+    "BE": {
+        "unicode": "Ǔ",
+        "unicodeName": "\\latinCapitalLetterUWithCaron"
+    },
+    "BF": {
+        "unicode": "Ú",
+        "unicodeName": "\\latinCapitalLetterUWithAcute"
+    },
+    "C0": {
+        "unicode": "Ù",
+        "unicodeName": "\\latinCapitalLetterUWithGrave"
+    },
+    "C1": {
+        "unicode": "Ü",
+        "unicodeName": "\\latinCapitalLetterUWithDiaeresis"
+    },
+    "C2": {
+        "unicode": "Ū",
+        "unicodeName": "\\latinCapitalLetterUWithMacron"
+    },
+    "C3": {
+        "unicode": "α",
+        "unicodeName": "\\greekSmallLetterAlpha"
+    },
+    "C4": {
+        "unicode": "β",
+        "unicodeName": "\\greekSmallLetterBeta"
+    },
+    "C5": {
+        "unicode": "θ",
+        "unicodeName": "\\greekSmallLetterTheta"
+    },
+    "C6": {
+        "unicode": "λ",
+        "unicodeName": "\\greekSmallLetterLamda"
+    },
+    "C7": {
+        "unicode": "μ",
+        "unicodeName": "\\greekSmallLetterMu"
+    },
+    "C8": {
+        "unicode": "Σ",
+        "unicodeName": "\\greekCapitalLetterSigma"
+    },
+    "C9": {
+        "unicode": "Φ",
+        "unicodeName": "\\greekCapitalLetterPhi"
+    },
+    "CA": {
+        "unicode": "Ω",
+        "unicodeName": "\\greekCapitalLetterOmega"
+    },
+    "CB": {
+        "unicode": "Ç",
+        "unicodeName": "\\latinCapitalLetterCWithCedilla"
+    },
+    "CC": {
+        "unicode": "¿",
+        "unicodeName": "\\invertedQuestionMark"
+    },
+    "CD": {
+        "unicode": "¡",
+        "unicodeName": "\\invertedExclamationMark"
+    },
+    "CF": {
+        "unicode": "£",
+        "unicodeName": "\\poundSign"
+    },
+    "E0": {
+        "unicode": "▎",
+        "unicodeName": "\\leftOneQuarterBlock"
+    },
+    "E1": {
+        "unicode": "▌",
+        "unicodeName": "\\leftHalfBlock"
+    },
+    "E2": {
+        "unicode": "▐",
+        "unicodeName": "\\rightHalfBlock"
+    },
+    "E3": {
+        "unicode": "🮇",
+        "unicodeName": "\\rightOneQuarterBlock"
+    },
+    "E4": {
+        "unicode": "▕",
+        "unicodeName": "\\rightOneEighthBlock"
+    },
+    "E5": {
+        "unicode": "█",
+        "unicodeName": "\\fullBlock"
+    },
+    "E6": {
+        "unicode": "𜸩",
+        "unicodeName": "\\largeTypePieceStem"
+    },
+    "E7": {
+        "unicode": "𜸟",
+        "unicodeName": "\\largeTypePieceCrossbar"
+    },
+    "E8": {
+        "unicode": "𜲐",
+        "unicodeName": "\\verticalLineWithFourTickMarks"
+    },
+    "E9": {
+        "unicode": "𜲑",
+        "unicodeName": "\\horizontalLineWithFourTickMarks"
+    },
+    "EA": {
+        "unicode": "▞",
+        "unicodeName": "\\quadrantUpperRightAndLowerLeft"
+    },
+    "EB": {
+        "unicode": "○",
+        "unicodeName": "\\whiteCircle"
+    },
+    "EC": {
+        "unicode": "●",
+        "unicodeName": "\\blackCircle"
+    },
+    "F5": {
+        "unicode": "♠",
+        "unicodeName": "\\blackSpadeSuit"
+    },
+    "F6": {
+        "unicode": "♥",
+        "unicodeName": "\\blackHeartSuit"
+    },
+    "F7": {
+        "unicode": "♦",
+        "unicodeName": "\\blackDiamondSuit"
+    },
+    "F8": {
+        "unicode": "♣",
+        "unicodeName": "\\blackClubSuit"
+    },
+    "F9": {
+        "unicode": "𜱯",
+        "unicodeName": "\\blackNeutralFace"
+    },
+    "FA": {
+        "unicode": "𜱏",
+        "unicodeName": "\\alienSquidClosedTentacles"
+    },
+    "FB": {
+        "unicode": "𜲝",
+        "unicodeName": "\\verticalGoKart"
+    },
+    "FC": {
+        "unicode": "𜲛",
+        "unicodeName": "\\horizontalRacingCar"
+    },
+    "FD": {
+        "unicode": "🯅",
+        "unicodeName": "\\stickFigure"
+    },
+    "FE": {
+        "unicode": "÷",
+        "unicodeName": "\\divisionSign"
+    }
 }
